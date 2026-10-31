@@ -29,8 +29,7 @@ CONF_IDLE_LOOP_INTERVAL = "idle_loop_interval"
 smart_vent_power_ns = cg.esphome_ns.namespace("smart_vent_power")
 SmartVentPower = smart_vent_power_ns.class_("SmartVentPower", cg.Component)
 
-CONFIG_SCHEMA = cv.All(
-    cv.Schema(
+CONFIG_SCHEMA = cv.Schema(
         {
             cv.GenerateID(): cv.declare_id(SmartVentPower),
             cv.Optional(CONF_LIGHT_SLEEP, default=True): cv.boolean,
@@ -44,9 +43,7 @@ CONFIG_SCHEMA = cv.All(
                 CONF_IDLE_LOOP_INTERVAL, default="250ms"
             ): cv.positive_time_period_milliseconds,
         }
-    ).extend(cv.COMPONENT_SCHEMA),
-    cv.only_with_esp_idf,
-)
+    ).extend(cv.COMPONENT_SCHEMA)
 
 
 async def to_code(config):
