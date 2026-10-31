@@ -29,6 +29,11 @@ This project contains most everything needed to 3D print, assemble, and flash an
 4. [Setup and Testing](/docs/SETUP_AND_TESTING.md)
 6. [Implementation Options](/docs/IMPLEMENTATION_OPTIONS.md)
 
+## Battery + Thread variant (work in progress)
+A battery-powered 2x12 variant using a Seeed XIAO ESP32-C6 on Thread, with a
+power-gated servo and an original parametric OpenSCAD model built around M3
+heat-set inserts. See [docs/BATTERY_THREAD.md](/docs/BATTERY_THREAD.md).
+
 ## Important Recommendations
 - It is recommended that you pair this vent with a system that can [measure and monitor Delta T](https://www.youtube.com/watch?v=_pD-rRCNv8k) (the difference in HVAC return air temperature and supply air temperature). Check out the [Delta Tango](https://github.com/BrobstonCreations/delta-tango) project.
 - It is recommended to install a [Static Pressure Regulating Damper](https://www.zonefirst.com/product/sprddd/), which goes between the return air plenum and the supply air plenum. This damper acts as a bypass and will open or close relative to the backpressure change created by opening and closing vents. This will relieve the majority of the back pressure that is created by closing vents and will help to ensure the longevity of the blower.
