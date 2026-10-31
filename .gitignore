@@ -4,3 +4,8 @@
 /.esphome/
 /secrets.yaml
 .idea
+
+# KiCad local state
+*.kicad_prl
+hardware/**/fab/*.net.xml
+hardware/**/*-backups/

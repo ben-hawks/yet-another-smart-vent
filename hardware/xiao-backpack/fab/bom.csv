@@ -1,0 +1,21 @@
+References,Qty,Value,Footprint,Notes
+C1,1,1u,C_0805_2012Metric_Pad1.18x1.45mm_HandSolder,0805
+C2,1,1n,C_0805_2012Metric_Pad1.18x1.45mm_HandSolder,0805
+C3 C4 C5,3,22u 10V,C_1206_3216Metric_Pad1.33x1.80mm_HandSolder,22 uF 10 V X5R/X7R 1206
+C7 C6,2,100n,C_0805_2012Metric_Pad1.18x1.45mm_HandSolder,0805
+D1,1,SS34,D_SMA_Handsoldering,"SS34 (40 V 3 A Schottky, SMA) or SS24"
+J1,1,Battery (JST-PH),JST_PH_B2B-PH-K_1x02_P2.00mm_Vertical,JST B2B-PH-K-S (2 mm). CHECK the battery lead polarity: pin 1 = +
+J2,1,Servo (GND +5V SIG FB),PinHeader_1x04_P2.54mm_Vertical,1x4 2.54 mm header
+J3,1,Limit switch,PinHeader_1x02_P2.54mm_Vertical,1x2 2.54 mm header
+L1,1,10u,L_Taiyo-Yuden_NR-60xx_HandSoldering,"10 uH shielded, 6x6 mm, Isat >= 2.5 A, DCR < 0.1 ohm (e.g. Taiyo Yuden NR6045 family; check Isat)"
+R1 R4 R5,3,1M,R_0805_2012Metric_Pad1.20x1.40mm_HandSolder,0805
+R10,1,100k,R_0805_2012Metric_Pad1.20x1.40mm_HandSolder,0805
+R2,1,75k,R_0805_2012Metric_Pad1.20x1.40mm_HandSolder,0805
+R3 R6,2,10k,R_0805_2012Metric_Pad1.20x1.40mm_HandSolder,0805
+R7,1,20k,R_0805_2012Metric_Pad1.20x1.40mm_HandSolder,0805
+R8,1,330,R_0805_2012Metric_Pad1.20x1.40mm_HandSolder,0805
+R9,1,1k,R_0805_2012Metric_Pad1.20x1.40mm_HandSolder,0805
+TP1,1,BAT+ to XIAO,TestPoint_THTPad_1.5x1.5mm_Drill0.7mm,wire pad
+TP2,1,BAT- to XIAO,TestPoint_THTPad_1.5x1.5mm_Drill0.7mm,wire pad
+U1,1,TPS22917DBV,SOT-23-6_Handsoldering,TI TPS22917DBVR load switch
+U2,1,MT3608,SOT-23-6_Handsoldering,MT3608 boost (SOT-23-6)
