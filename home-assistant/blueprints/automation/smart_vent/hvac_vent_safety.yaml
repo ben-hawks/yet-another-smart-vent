@@ -1,0 +1,112 @@
+blueprint:
+  name: Smart vent HVAC safety (open vents on high rise / cold coil / lost sensor)
+  description: >-
+    Opens all smart vents when the furnace's temperature rise approaches its
+    rated maximum (vents restricting airflow), when supply air gets cold
+    enough to risk an evaporator coil freeze in cooling, or when the Delta
+    Tango sensor goes unavailable during a heating or cooling cycle.
+    Find your furnace's rated rise on its rating plate or product data
+    sheet (for example Ameristar M801P080BU36: 30-60 °F).
+  domain: automation
+  source_url: https://github.com/ben-hawks/yet-another-smart-vent/blob/main/home-assistant/blueprints/automation/smart_vent/hvac_vent_safety.yaml
+  input:
+    climate_entity:
+      name: Thermostat
+      selector:
+        entity:
+          domain: climate
+    rise_sensor:
+      name: Temperature rise (°F) sensor
+      description: Delta Tango "HVAC Temperature Rise (F)"
+      selector:
+        entity:
+          domain: sensor
+    supply_sensor:
+      name: Supply air temperature sensor
+      selector:
+        entity:
+          domain: sensor
+          device_class: temperature
+    vents:
+      name: Smart vents
+      selector:
+        target:
+          entity:
+            domain: cover
+    max_rise_f:
+      name: Open vents above this rise (°F)
+      description: A few degrees under the furnace's rated maximum rise.
+      default: 57
+      selector:
+        number:
+          min: 30
+          max: 90
+          unit_of_measurement: "°F"
+    min_supply_temp:
+      name: Open vents below this supply temperature while cooling
+      description: In the sensor's own unit. About 4 °C / 40 °F risks coil icing.
+      default: 4
+      selector:
+        number:
+          min: -10
+          max: 60
+          step: 0.5
+    sustain:
+      name: Must persist for
+      default:
+        minutes: 2
+      selector:
+        duration:
+    notify_service:
+      name: Notification action (optional)
+      description: e.g. notify.mobile_app_phone. Leave empty to skip.
+      default: ""
+      selector:
+        text:
+
+mode: single
+max_exceeded: silent
+
+trigger:
+  - platform: numeric_state
+    entity_id: !input rise_sensor
+    above: !input max_rise_f
+    for: !input sustain
+    id: high_rise
+  - platform: numeric_state
+    entity_id: !input supply_sensor
+    below: !input min_supply_temp
+    for: !input sustain
+    id: cold_coil
+  - platform: state
+    entity_id: !input rise_sensor
+    to: unavailable
+    for:
+      minutes: 5
+    id: sensor_lost
+
+variables:
+  climate_entity: !input climate_entity
+  notify_service: !input notify_service
+  action_now: "{{ state_attr(climate_entity, 'hvac_action') }}"
+
+condition:
+  - condition: template
+    value_template: >-
+      {{ (trigger.id == 'high_rise' and action_now == 'heating')
+         or (trigger.id == 'cold_coil' and action_now == 'cooling')
+         or (trigger.id == 'sensor_lost' and action_now in ['heating', 'cooling']) }}
+
+action:
+  - service: cover.open_cover
+    target: !input vents
+  - if:
+      - condition: template
+        value_template: "{{ notify_service != '' }}"
+    then:
+      - service: "{{ notify_service }}"
+        data:
+          title: HVAC safety
+          message: >-
+            Opened all smart vents ({{ trigger.id | replace('_', ' ') }}).
+            Rise: {{ states(trigger.entity_id) if trigger.id == 'high_rise' else 'n/a' }}.

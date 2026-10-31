@@ -1,0 +1,109 @@
+# Delta Tango (Thread edition): HVAC supply/return temperature monitor.
+#
+# Rewritten for current ESPHome, inspired by BrobstonCreations/delta-tango:
+#   - Seeed XIAO ESP32-C6, mains powered (USB adapter at the furnace)
+#   - One DS18B20 per 1-Wire pin, so supply and return can never swap places
+#     (the original put both on one bus and relied on discovery order)
+#   - Joins Thread as a Full Thread Device. Being always powered, it can act
+#     as a Thread router near the furnace, which helps the battery vents
+#     reach the network through metal ductwork.
+#   - Reports temperature rise (supply - return) in both C and F, as plain
+#     numbers so Home Assistant does not unit-convert a temperature
+#     *difference* as if it were an absolute temperature.
+#
+# Pair with home-assistant/blueprints/automation/smart_vent/hvac_vent_safety.yaml
+
+substitutions:
+  name: delta-tango
+  friendly_name: Delta Tango
+  supply_pin: GPIO0   # [D0] probe in the supply plenum, past the heat exchanger / A-coil
+  return_pin: GPIO1   # [D1] probe in the return duct, before the filter
+  update_interval: 15s
+  thread_tlv: !secret thread_tlv
+
+esphome:
+  name: ${name}
+  friendly_name: ${friendly_name}
+  on_boot:
+    - priority: 800
+      then:
+        # XIAO ESP32-C6 RF switch: enable, on-board antenna.
+        - output.turn_off: rf_switch_enable
+        - output.turn_off: rf_antenna_select
+
+esp32:
+  board: seeed_xiao_esp32c6
+  variant: esp32c6
+  framework:
+    type: esp-idf
+
+network:
+  enable_ipv6: true
+
+openthread:
+  tlv: ${thread_tlv}
+  device_type: FTD
+
+api:
+ota:
+  - platform: esphome
+logger:
+  level: INFO
+
+output:
+  - platform: gpio
+    id: rf_switch_enable
+    pin: GPIO3
+  - platform: gpio
+    id: rf_antenna_select
+    pin: GPIO14
+
+one_wire:
+  - platform: gpio
+    id: supply_bus
+    pin: ${supply_pin}
+  - platform: gpio
+    id: return_bus
+    pin: ${return_pin}
+
+sensor:
+  - platform: dallas_temp
+    id: supply_temp
+    one_wire_id: supply_bus
+    name: HVAC Supply Air Temperature
+    update_interval: ${update_interval}
+    accuracy_decimals: 1
+  - platform: dallas_temp
+    id: return_temp
+    one_wire_id: return_bus
+    name: HVAC Return Air Temperature
+    update_interval: ${update_interval}
+    accuracy_decimals: 1
+
+  # Positive while heating, negative while cooling.
+  - platform: template
+    id: rise_c
+    name: HVAC Temperature Rise (C)
+    icon: mdi:thermometer-chevron-up
+    unit_of_measurement: "Δ°C"
+    state_class: measurement
+    accuracy_decimals: 1
+    update_interval: ${update_interval}
+    lambda: |-
+      if (isnan(id(supply_temp).state) || isnan(id(return_temp).state)) return {};
+      return id(supply_temp).state - id(return_temp).state;
+  - platform: template
+    id: rise_f
+    name: HVAC Temperature Rise (F)
+    icon: mdi:thermometer-chevron-up
+    unit_of_measurement: "Δ°F"
+    state_class: measurement
+    accuracy_decimals: 1
+    update_interval: ${update_interval}
+    lambda: |-
+      if (isnan(id(supply_temp).state) || isnan(id(return_temp).state)) return {};
+      return (id(supply_temp).state - id(return_temp).state) * 1.8f;
+
+  - platform: internal_temperature
+    name: Chip Temperature
+    entity_category: diagnostic

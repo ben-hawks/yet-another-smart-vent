@@ -33,6 +33,8 @@ This project contains most everything needed to 3D print, assemble, and flash an
 A battery-powered 2x12 variant using a Seeed XIAO ESP32-C6 on Thread, with a
 power-gated servo and an original parametric OpenSCAD model built around M3
 heat-set inserts. See [docs/BATTERY_THREAD.md](/docs/BATTERY_THREAD.md).
+A matching Thread rewrite of Delta Tango (supply/return temperature + a vent
+safety blueprint) lives in [delta-tango/](/delta-tango/README.md).
 
 ## Important Recommendations
 - It is recommended that you pair this vent with a system that can [measure and monitor Delta T](https://www.youtube.com/watch?v=_pD-rRCNv8k) (the difference in HVAC return air temperature and supply air temperature). Check out the [Delta Tango](https://github.com/BrobstonCreations/delta-tango) project.

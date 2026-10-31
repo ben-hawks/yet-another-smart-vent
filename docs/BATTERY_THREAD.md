@@ -118,7 +118,11 @@ prevent that, and test step 3 checks it.
 
 ## Heat (gas furnace)
 
-Supply air from a gas furnace typically reaches **45–60 °C** at the register.
+Supply air from a gas furnace is return air plus the furnace's rated rise.
+For an Ameristar M801P080BU36 (30–60 °F rise) that's about **37–53 °C
+(98–128 °F)** leaving the furnace, and a bit less at the register. It runs
+hotter if closed vents push the rise past its rating; see
+[Delta Tango](../delta-tango/README.md).
 
 - **Print everything in ASA (best) or PETG.** PLA softens around 55–60 °C
   and long thin parts will sag or warp.
