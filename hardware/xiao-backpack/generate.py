@@ -341,6 +341,11 @@ def build_pcb(freerouting_jar=None, ses_in=None):
     board = pcbnew.BOARD()
     ds = board.GetDesignSettings()
     ds.SetCopperLayerCount(2)
+    # Fab-friendly limits (JLCPCB/OSH Park class): 0.3 mm copper to board edge,
+    # 0.12 mm minimum track (the router necks down into small pads).
+    ds.m_CopperEdgeClearance = pcbnew.FromMM(0.3)
+    ds.m_TrackMinWidth = pcbnew.FromMM(0.12)
+    ds.m_MinClearance = pcbnew.FromMM(0.15)
     ns = ds.m_NetSettings
     dflt = ns.m_DefaultNetClass
     dflt.SetTrackWidth(pcbnew.FromMM(DEFAULT_TRACK))
@@ -454,6 +459,7 @@ def build_pcb(freerouting_jar=None, ses_in=None):
     dsn.parent.mkdir(exist_ok=True)
     if not pcbnew.ExportSpecctraDSN(board, str(dsn)):
         sys.exit("DSN export failed")
+    assign_dsn_classes(dsn)
     if freerouting_jar:
         if ses.exists():
             ses.unlink()
@@ -494,6 +500,24 @@ def build_pcb(freerouting_jar=None, ses_in=None):
     return pcb_path
 
 
+def assign_dsn_classes(dsn):
+    """KiCad 7's exporter writes every net into kicad_default (net class
+    assignments made through the Python API don't reach it), so move the
+    power nets into their classes here. The router then uses their widths
+    and vias."""
+    text = dsn.read_text()
+    m = re.search(r"\(class kicad_default \"\"([^(]*)", text)
+    nets = m.group(1).split()
+    moved = set()
+    for cname, c in NET_CLASSES.items():
+        mine = [n for n in nets if n in c["nets"]]
+        moved.update(mine)
+        text = text.replace(f"(class {cname}\n", f"(class {cname} {' '.join(mine)}\n", 1)
+    keep = [n for n in nets if n not in moved]
+    text = text[:m.start(1)] + " " + " ".join(keep) + "\n      " + text[m.end(1):]
+    dsn.write_text(text)
+
+
 def import_ses(board, ses_path, nets):
     import pcbnew
     text = ses_path.read_text()
@@ -512,7 +536,7 @@ def import_ses(board, ses_path, nets):
         ni = nets.get(m.group(1))
         if ni is None:
             continue
-        for w in re.finditer(r"\(path (\S+) ([\d.]+)((?:\s+-?[\d.]+)+)\)", blk):
+        for w in re.finditer(r"\(path (\S+) ([\d.]+)((?:\s+-?[\d.]+)+)\s*\)", blk):
             layer, width = w.group(1), float(w.group(2)) * scale_mm
             coords = w.group(3).split()
             ps = [pt(coords[i], coords[i + 1]) for i in range(0, len(coords), 2)]

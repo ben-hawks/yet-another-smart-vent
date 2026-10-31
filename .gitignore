@@ -9,3 +9,4 @@
 *.kicad_prl
 hardware/**/fab/*.net.xml
 hardware/**/*-backups/
+hardware/**/*.kicad_pcb.rpt

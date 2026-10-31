@@ -456,8 +456,7 @@
     (net LIM_PWR
       (pins R9-2 J3-1)
     )
-    (class kicad_default "" CT FB GND LIMIT LIM_PWR SRV_EN SRV_FB SRV_FB_ADC
-      SRV_PWM SRV_SIG SW V5 VBAT VBAT_ADC VSW
+    (class kicad_default "" CT FB LIMIT LIM_PWR SRV_EN SRV_FB SRV_FB_ADC SRV_PWM SRV_SIG VBAT_ADC
       (circuit
         (use_via Via[0-1]_600:300_um)
       )
@@ -466,7 +465,7 @@
         (clearance 200.1)
       )
     )
-    (class Power
+    (class Power GND SW V5 VBAT VSW
       (circuit
         (use_via Via[0-1]_800:400_um)
       )
