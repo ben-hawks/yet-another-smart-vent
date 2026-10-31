@@ -202,6 +202,14 @@ sensor:
     on_value:
       - component.update: battery_level
 
+  # Chip temperature: the closest thing we have to a battery temperature
+  # (the cell shares the closed tower with the board). Gas furnace supply
+  # air can reach 50-60 C; Li-ion ages noticeably faster above ~45 C.
+  - platform: internal_temperature
+    name: Bay Temperature
+    entity_category: diagnostic
+    update_interval: 10min
+
   - platform: template
     id: battery_level
     name: Battery
