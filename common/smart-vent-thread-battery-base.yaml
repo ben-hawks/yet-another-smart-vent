@@ -78,7 +78,7 @@ network:
   enable_ipv6: true
 
 openthread:
-  tlv: !secret thread_tlv
+  tlv: ${thread_tlv}
   device_type: MTD
   poll_period: ${thread_poll_period}
 

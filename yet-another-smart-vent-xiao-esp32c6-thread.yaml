@@ -17,6 +17,7 @@ substitutions:
   servo_transition_length: 3s
   servo_transition_length_ms: '3000'  # keep in sync with the line above
   thread_poll_period: 5s
+  thread_tlv: !secret thread_tlv
 
 packages:
   smart_vent:
