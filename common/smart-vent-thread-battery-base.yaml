@@ -1,0 +1,414 @@
+# Battery-powered Smart Vent over Thread (ESP32-C6 / ESP32-H2)
+#
+# Hardware this package expects (see docs/BATTERY_THREAD.md):
+#   - Seeed XIAO ESP32-C6, powered from a 1S Li-ion cell on its BAT pads
+#   - 5V regulator with a true-shutdown EN pin feeding the servo
+#     (EN driven by ${servo_power_pin}; the limit switch is also fed from it)
+#   - Analog-feedback servo (DFRobot DMS-MG90-A); feedback wire into a
+#     10k/20k divider -> ${servo_feedback_pin}
+#   - Closed limit switch between ${servo_power_pin} and ${limit_switch_pin}
+#   - 1M/1M divider from VBAT -> ${battery_pin}
+#
+# Power strategy:
+#   - Thread Minimal Thread Device (MTD) with a poll period = Sleepy End
+#     Device. The border router queues commands until the next poll, so
+#     ${thread_poll_period} is roughly the worst-case command latency.
+#   - smart_vent_power enables ESP-IDF automatic light sleep. It is blocked
+#     only while the servo is powered.
+#   - The servo, its feedback pot and the limit switch draw nothing unless
+#     a move is in progress.
+
+substitutions:
+  # --- Pins (XIAO ESP32-C6 labels in brackets) ---
+  battery_pin: GPIO0          # [D0/A0]
+  servo_feedback_pin: GPIO1   # [D1/A1]
+  servo_pwm_pin: GPIO2        # [D2]
+  servo_power_pin: GPIO21     # [D3]
+  limit_switch_pin: GPIO22    # [D4]
+
+  # --- Mechanics ---
+  # Servo "level" (-1..1) distance for a 90 degree louver swing.
+  ninety_degree_servo_distance: '0.77'
+  # 1 or -1, flips sweep direction if the servo is mounted mirrored.
+  invert_value: '1'
+  servo_transition_length: 3s
+  servo_transition_length_ms: '3000'  # keep in sync with the line above
+  servo_settle_time: 400ms
+
+  # --- Power / networking ---
+  thread_poll_period: 5s
+  idle_loop_interval: 250ms
+  battery_update_interval: 30min
+  # Fail-safe: open the vent if Home Assistant has been unreachable this long.
+  failsafe_open_after_minutes: '30'
+
+esphome:
+  name: ${name}
+  friendly_name: ${friendly_name}
+  name_add_mac_suffix: true
+  on_boot:
+    - priority: 800
+      then:
+        # XIAO ESP32-C6 RF switch: GPIO3 low enables it, GPIO14 low selects
+        # the on-board ceramic antenna (high = U.FL connector).
+        - output.turn_off: rf_switch_enable
+        - output.turn_off: rf_antenna_select
+    - priority: -100
+      then:
+        - if:
+            condition:
+              lambda: 'return id(calibrated);'
+            then:
+              - script.execute: read_position
+            else:
+              - script.execute: calibrate
+
+esp32:
+  board: seeed_xiao_esp32c6
+  variant: esp32c6
+  framework:
+    type: esp-idf
+
+smart_vent_power:
+  id: power_mgr
+  light_sleep: true
+  idle_loop_interval: ${idle_loop_interval}
+
+network:
+  enable_ipv6: true
+
+openthread:
+  tlv: !secret thread_tlv
+  device_type: MTD
+  poll_period: ${thread_poll_period}
+
+api:
+  # Rebooting does not help a sleepy battery device; the fail-safe below
+  # handles a lost controller instead.
+  reboot_timeout: 0s
+
+ota:
+  - platform: esphome
+
+logger:
+  level: INFO
+
+preferences:
+  flash_write_interval: 10s
+
+globals:
+  - id: calibrated
+    type: bool
+    restore_value: true
+    initial_value: 'false'
+  - id: closed_level
+    type: float
+    restore_value: true
+    initial_value: '0'
+  - id: open_level
+    type: float
+    restore_value: true
+    initial_value: '0'
+  - id: closed_feedback
+    type: float
+    restore_value: true
+    initial_value: '0'
+  - id: open_feedback
+    type: float
+    restore_value: true
+    initial_value: '0'
+  - id: sweep_level
+    type: float
+    initial_value: '0'
+  - id: minutes_without_api
+    type: int
+    initial_value: '0'
+
+output:
+  - platform: ledc
+    id: servo_pwm
+    pin: ${servo_pwm_pin}
+    frequency: 50Hz
+  - platform: gpio
+    id: rf_switch_enable
+    pin: GPIO3
+  - platform: gpio
+    id: rf_antenna_select
+    pin: GPIO14
+
+switch:
+  # Enables the servo regulator AND feeds the limit switch.
+  - platform: gpio
+    id: servo_power
+    pin: ${servo_power_pin}
+    restore_mode: ALWAYS_OFF
+    internal: true
+
+  # Maintenance mode: radio always on (needed for OTA uploads) and no
+  # light sleep. Turns itself off after 15 minutes.
+  - platform: template
+    id: maintenance_mode
+    name: Maintenance Mode
+    icon: mdi:wrench-clock
+    entity_category: config
+    optimistic: true
+    restore_mode: ALWAYS_OFF
+    turn_on_action:
+      - openthread.set_poll_period: 0s
+      - lambda: 'id(power_mgr).begin_activity();'
+      - delay: 15min
+      - switch.turn_off: maintenance_mode
+    turn_off_action:
+      - openthread.set_poll_period: ${thread_poll_period}
+      - lambda: 'id(power_mgr).end_activity();'
+
+servo:
+  - id: vent_servo
+    output: servo_pwm
+    transition_length: ${servo_transition_length}
+    restore: false
+
+binary_sensor:
+  # Only meaningful while servo_power is on (the switch is fed from it).
+  - platform: gpio
+    id: closed_limit_switch
+    internal: true
+    pin:
+      number: ${limit_switch_pin}
+      mode:
+        input: true
+        pulldown: true
+
+sensor:
+  - platform: adc
+    id: servo_feedback
+    pin: ${servo_feedback_pin}
+    attenuation: 12db
+    samples: 8
+    update_interval: never
+    internal: true
+
+  - platform: adc
+    id: battery_voltage
+    name: Battery Voltage
+    pin: ${battery_pin}
+    attenuation: 12db
+    samples: 16
+    update_interval: ${battery_update_interval}
+    entity_category: diagnostic
+    accuracy_decimals: 2
+    filters:
+      - multiply: 2.0  # 1M/1M divider
+    on_value:
+      - component.update: battery_level
+
+  - platform: template
+    id: battery_level
+    name: Battery
+    unit_of_measurement: '%'
+    device_class: battery
+    state_class: measurement
+    accuracy_decimals: 0
+    update_interval: never
+    lambda: |-
+      // Rough resting-voltage curve for a 1S Li-ion cell.
+      static const float v[] = {3.30, 3.50, 3.60, 3.70, 3.80, 3.90, 4.00, 4.10, 4.20};
+      static const float p[] = {0,    5,    10,   30,   55,   70,   82,   92,   100};
+      float x = id(battery_voltage).state;
+      if (isnan(x)) return {};
+      if (x <= v[0]) return 0.0f;
+      for (int i = 1; i < 9; i++) {
+        if (x <= v[i]) return p[i-1] + (x - v[i-1]) * (p[i] - p[i-1]) / (v[i] - v[i-1]);
+      }
+      return 100.0f;
+
+button:
+  - platform: template
+    name: Recalibrate
+    icon: mdi:tune-vertical
+    entity_category: config
+    on_press:
+      - script.execute: calibrate
+
+cover:
+  - platform: template
+    id: vent
+    name: Vent
+    device_class: damper
+    has_position: true
+    open_action:
+      - script.execute:
+          id: move_to
+          target: 1.0
+    close_action:
+      - script.execute:
+          id: move_to
+          target: 0.0
+    position_action:
+      - script.execute:
+          id: move_to
+          target: !lambda 'return pos;'
+
+interval:
+  # Fail-safe: never leave a room's vent closed if the controller is gone.
+  - interval: 1min
+    then:
+      - if:
+          condition:
+            api.connected:
+          then:
+            - lambda: 'id(minutes_without_api) = 0;'
+          else:
+            - lambda: 'id(minutes_without_api)++;'
+            - if:
+                condition:
+                  lambda: |-
+                    return id(minutes_without_api) == ${failsafe_open_after_minutes}
+                        && id(calibrated) && id(vent).position < 0.99f;
+                then:
+                  - logger.log:
+                      level: WARN
+                      format: "Home Assistant unreachable, opening vent as a fail-safe"
+                  - script.execute:
+                      id: move_to
+                      target: 1.0
+
+script:
+  # Power the servo rail and keep the CPU awake. Safe to call when on.
+  - id: power_up
+    then:
+      - if:
+          condition:
+            switch.is_off: servo_power
+          then:
+            - lambda: 'id(power_mgr).begin_activity();'
+            - switch.turn_on: servo_power
+            - delay: 60ms
+
+  # Stop PWM first so the servo is not back-powered through its signal pin.
+  - id: power_down
+    then:
+      - servo.detach: vent_servo
+      - if:
+          condition:
+            switch.is_on: servo_power
+          then:
+            - delay: 20ms
+            - switch.turn_off: servo_power
+            - lambda: 'id(power_mgr).end_activity();'
+
+  # Convert a feedback reading into a 0 (closed) .. 1 (open) position.
+  - id: publish_feedback_position
+    then:
+      - component.update: servo_feedback
+      - lambda: |-
+          float span = id(open_feedback) - id(closed_feedback);
+          if (fabsf(span) < 0.01f) return;
+          float p = (id(servo_feedback).state - id(closed_feedback)) / span;
+          id(vent).position = clamp(p, 0.0f, 1.0f);
+          id(vent).current_operation = COVER_OPERATION_IDLE;
+          id(vent).publish_state();
+
+  - id: move_to
+    mode: queued
+    max_runs: 3
+    parameters:
+      target: float
+    then:
+      - if:
+          condition:
+            lambda: 'return !id(calibrated);'
+          then:
+            - logger.log:
+                level: WARN
+                format: "Vent not calibrated yet, ignoring move"
+            - script.stop: move_to
+      - lambda: |-
+          id(vent).current_operation = target > id(vent).position
+              ? COVER_OPERATION_OPENING : COVER_OPERATION_CLOSING;
+          id(vent).publish_state();
+      - script.execute: power_up
+      - script.wait: power_up
+      - servo.write:
+          id: vent_servo
+          level: !lambda |-
+            return id(closed_level) + clamp(target, 0.0f, 1.0f) * (id(open_level) - id(closed_level));
+      - delay: ${servo_transition_length}
+      - delay: ${servo_settle_time}
+      - script.execute: publish_feedback_position
+      - script.wait: publish_feedback_position
+      - script.execute: power_down
+
+  # Wake the servo without moving it and work out where the louvers are, so
+  # the next transition starts from the real position.
+  - id: read_position
+    then:
+      - script.execute: power_up
+      - script.wait: power_up
+      - delay: 100ms
+      - component.update: servo_feedback
+      - lambda: |-
+          float span = id(open_feedback) - id(closed_feedback);
+          float p = fabsf(span) < 0.01f ? 1.0f
+              : clamp((id(servo_feedback).state - id(closed_feedback)) / span, 0.0f, 1.0f);
+          // Re-attach at the measured level without a transition.
+          id(vent_servo)->set_transition_length(0);
+          id(vent_servo)->write(id(closed_level) + p * (id(open_level) - id(closed_level)));
+          id(vent_servo)->set_transition_length(${servo_transition_length_ms});
+          id(vent).position = p;
+          id(vent).current_operation = COVER_OPERATION_IDLE;
+          id(vent).publish_state();
+      - delay: 300ms
+      - script.execute: power_down
+
+  # Sweep toward closed until the limit switch trips, then define "open"
+  # as 90 degrees from there. Results are stored in flash.
+  - id: calibrate
+    mode: single
+    then:
+      - logger.log: "Calibrating vent"
+      - script.execute: power_up
+      - script.wait: power_up
+      - lambda: |-
+          id(vent_servo)->set_transition_length(0);
+          id(sweep_level) = 0.0f;
+          id(vent_servo)->write(0.0f);
+      - delay: 600ms
+      - while:
+          condition:
+            lambda: |-
+              return !id(closed_limit_switch).state && fabsf(id(sweep_level)) < 1.0f;
+          then:
+            - lambda: |-
+                id(sweep_level) -= 0.01f * ${invert_value};
+                id(vent_servo)->write(id(sweep_level));
+            - delay: 60ms
+      - if:
+          condition:
+            binary_sensor.is_off: closed_limit_switch
+          then:
+            - logger.log:
+                level: ERROR
+                format: "Calibration failed: limit switch never closed"
+            - lambda: 'id(vent_servo)->set_transition_length(${servo_transition_length_ms});'
+            - script.execute: power_down
+            - script.stop: calibrate
+      - delay: 300ms
+      - component.update: servo_feedback
+      - lambda: |-
+          id(closed_level) = id(sweep_level);
+          id(closed_feedback) = id(servo_feedback).state;
+          id(open_level) = id(sweep_level) + ${ninety_degree_servo_distance} * ${invert_value};
+          id(vent_servo)->write(id(open_level));
+      - delay: 1500ms
+      - component.update: servo_feedback
+      - lambda: |-
+          id(open_feedback) = id(servo_feedback).state;
+          id(calibrated) = true;
+          id(vent_servo)->set_transition_length(${servo_transition_length_ms});
+          ESP_LOGI("vent", "Calibrated: closed=%.3f (fb %.3f V) open=%.3f (fb %.3f V)",
+                   id(closed_level), id(closed_feedback), id(open_level), id(open_feedback));
+          id(vent).position = 1.0f;
+          id(vent).current_operation = COVER_OPERATION_IDLE;
+          id(vent).publish_state();
+      - script.execute: power_down

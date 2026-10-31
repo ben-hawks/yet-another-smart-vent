@@ -1,0 +1,34 @@
+# Battery + Thread smart vent: Seeed XIAO ESP32-C6 + DFRobot DMS-MG90-A.
+#
+# Needs a Thread border router in Home Assistant. Put the network's
+# dataset in secrets.yaml as `thread_tlv` (Settings -> Devices & services ->
+# Thread -> (i) on your network -> "Active dataset TLVs").
+#
+# To use this from the ESPHome dashboard without cloning the repo, copy this
+# file into your ESPHome config folder. The packages and the external
+# component below are fetched from GitHub.
+
+substitutions:
+  name: yet-another-smart-vent
+  friendly_name: Smart Vent
+  repo_ref: main
+  ninety_degree_servo_distance: '0.77'
+  invert_value: '1'
+  servo_transition_length: 3s
+  servo_transition_length_ms: '3000'  # keep in sync with the line above
+  thread_poll_period: 5s
+
+packages:
+  smart_vent:
+    url: https://github.com/ben-hawks/yet-another-smart-vent
+    ref: ${repo_ref}
+    files: [common/smart-vent-thread-battery-base.yaml]
+    refresh: 1d
+
+external_components:
+  - source:
+      type: git
+      url: https://github.com/ben-hawks/yet-another-smart-vent
+      ref: ${repo_ref}
+    components: [smart_vent_power]
+    refresh: 1d
