@@ -42,10 +42,10 @@ to an H2 board with only pin and board changes.
 | 2 | 1 MΩ resistor | Battery voltage divider |
 | 1 | 10 kΩ + 1 × 20 kΩ resistor | Servo feedback divider (5 V → 3.3 V) |
 | 1 | 100 nF capacitor | Across the lower 1 MΩ resistor (steadies the ADC reading) |
-| 9 | M3 heat-set insert (sized for a 4.0 mm hole × 6.5 mm deep) | 4 centre joint, 2 lid, 3 louver axles |
-| 4 | M3 × 10 flat-head screw | Centre joint (2 top), louver axles at the far end |
-| 3 | M3 × 8 flat-head screw | Centre joint (2 bottom) + follower louver axle |
-| 2 | M3 × 6 flat-head screw | Lid |
+| 9 | M3 heat-set insert, 4.6 mm OD × 5.7 mm long (4.0 mm hole, 7 mm deep in the model) | 4 centre joint, 2 lid, 3 louver axles |
+| 2 | M3 × 10 flat-head screw | Centre joint, top (through the grille) |
+| 6 | M3 × 8 flat-head screw | Centre joint bottom (2), far-end louver axles (2), lid (2) |
+| 1 | M3 × 16 flat-head screw | Follower louver axle through the partition (crosses a 6.6 mm gap) |
 | – | Closed-cell foam, about 3 mm | Lines the tower (see [Heat](#heat-gas-furnace)) |
 
 If your inserts need a different hole size, change `insert_d` and
@@ -168,8 +168,8 @@ top (countersunk) and two from below.
 3. Trim a single-arm servo horn to about 10 mm and screw it into the pocket
    on the driven louver's servo end, using the servo's own small screws.
 4. Push both crank pins into the link, then drop both louvers in from below.
-   Fix the follower with an M3 × 8 flat-head through the partition from the
-   bay side, and fix both far ends with M3 × 10 flat-heads through the end
+   Fix the follower with an M3 × 16 flat-head through the partition from the
+   bay side, and fix both far ends with M3 × 8 flat-heads through the end
    wall.
 5. Center the servo, slide it in from the bay so its spline engages the
    horn, then screw its tabs to the partition.
@@ -189,10 +189,12 @@ these values at the top of the `.scad` file:
 
 - `body_len` / `body_w`: the inside of the boot, minus about 2 mm each way
   for clearance.
-- `bay_depth` (default 85 mm): the tower holds an upright 18650 and needs
-  about 85 mm of clear depth below the floor surface **at one end of the
-  boot**. If the boot is shallower, or the duct connects at that end, tell
-  us. A flat pouch cell layout is possible.
+- `bay_depth` (default 85 mm): the tower holds an upright 18650. With the
+  lid it reaches 87.5 mm below the floor, which leaves about 14 mm in a 4"
+  (101.6 mm, `boot_depth`) boot. The model refuses to render if the tower
+  stops fitting. If the duct leaves the boot right under the tower's end,
+  that 14 mm gap restricts airflow, so put the tower at the other end (mirror
+  the model).
 - `flange_len` / `flange_w`: the size of your current register cover.
 
 Print the `fit_test` part first: a short slice of the tower end with an

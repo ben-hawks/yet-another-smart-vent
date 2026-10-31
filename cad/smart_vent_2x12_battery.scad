@@ -22,6 +22,7 @@ body_len   = 296;     // outer length of the part that drops into the boot
 body_w     = 52;      // outer width of the part that drops into the boot
 body_depth = 40;      // louver section depth below the floor surface
 bay_depth  = 85;      // electronics/battery tower depth below the floor
+boot_depth = 101.6;   // measured: floor surface to the bottom of the boot (4")
 
 /* [Grille flange] */
 flange_len = 330;
@@ -43,14 +44,15 @@ louver_axis_z  = -19;
 louver_axis_y  = 11.8;   // +/- from centre
 louver_half_chord = 11;
 louver_plate_t = 4;      // plate sits below the axis (flat side down to print)
-end_block_len  = 6;
+end_block_len  = 9;      // must exceed insert_depth
 crank_r        = 8;      // crank pin radius from the louver axis
 pin_d          = 3;
 louver_end_gap = 0.5;    // clearance at each end of a louver
 
 /* [M3 hardware] */
-insert_d     = 4.0;   // hole for M3 heat-set insert (check your inserts)
-insert_depth = 6.5;
+// M3 x 4.6 OD x 5.7 mm inserts: 4.0 mm hole, 7 mm deep (room for displaced plastic)
+insert_d     = 4.0;
+insert_depth = 7.0;
 m3_clear     = 3.4;
 m3_head_d    = 6.4;   // countersink diameter for M3 flat head
 
@@ -68,6 +70,10 @@ cell_holder = [21, 21, 78];   // single 18650 holder, standing upright
 xiao = [17.8, 21, 1.2];       // XIAO ESP32-C6: width, length, PCB thickness
 
 $fn = 48;
+
+assert(bay_depth + 2.5 + 5 <= boot_depth,
+       str("Tower (", bay_depth + 2.5, " mm incl. lid) needs 5 mm clearance in a ", boot_depth, " mm boot"));
+assert(end_block_len >= insert_depth + 1, "Louver end blocks are too short for the inserts");
 eps = 0.01;
 
 // ---------------------------------------------------------------- derived
