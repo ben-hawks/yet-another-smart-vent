@@ -36,6 +36,8 @@ board's HEAT terminal) and measure the real rise with all vents open first.
 
 ## Hardware
 
+**Parts list, wiring diagram, probe installation and commissioning steps: [BUILD.md](BUILD.md).**
+
 - Seeed XIAO ESP32-C6 and a USB power adapter (furnaces usually have an
   outlet nearby)
 - 2 × waterproof DS18B20 probes, each with a **4.7 kΩ** pull-up from DATA to 3V3

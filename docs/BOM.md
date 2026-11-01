@@ -69,5 +69,5 @@ $3) and shipping, so expect roughly **$30–35 per vent** before shipping.
 ## Not on this list
 
 - A Thread border router (you already have one).
-- Delta Tango (`delta-tango/`): a mains-powered XIAO ESP32-C6, 2 × waterproof
-  DS18B20 probes, 2 × 4.7 kΩ resistors and a USB power supply.
+- Delta Tango (one per furnace, about $21): see
+  [`delta-tango/BUILD.md`](../delta-tango/BUILD.md).
