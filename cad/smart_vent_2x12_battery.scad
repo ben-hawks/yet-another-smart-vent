@@ -62,8 +62,8 @@ servo_body_w    = 12.2;   // along Z
 servo_shaft_off = 5.9;    // shaft centre from the near end of the body
 servo_tab_hole_spacing = 27.8;
 servo_above_tab = 6.6;    // case height above the mounting tabs
-servo_spline_above_tab = 12; // top of the output spline above the tabs
-servo_below_tab = 16;     // case depth below the tabs (into the bay)
+servo_spline_above_tab = 8.7; // top of the output spline above the tabs (FT90M sheet: 25.5 - 16.8)
+servo_below_tab = 16.8;   // case depth below the tabs (FT90M sheet)
 
 /* [Electronics] */
 cell_holder = [21, 21, 78];   // single 18650 holder, standing upright

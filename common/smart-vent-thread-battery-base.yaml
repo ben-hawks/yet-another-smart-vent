@@ -5,7 +5,8 @@
 #   - 5V regulator with a true-shutdown EN pin feeding the servo
 #     (EN driven by ${servo_power_pin}; the limit switch is also fed from it)
 #   - Analog-feedback servo (Feetech FT90M-FB: 280 deg, metal gear, rated
-#     -15..70 C, feedback 0.04-3.2 V);
+#     -15..70 C); its feedback can reach 4.45 V, so it goes through a
+#     10k/20k divider
 #     feedback wire through 1k (100k pull-down) -> ${servo_feedback_pin}
 #   - Closed limit switch between ${servo_power_pin} and ${limit_switch_pin}
 #   - 1M/1M divider from VBAT -> ${battery_pin}

@@ -36,8 +36,10 @@ connectors and headers. See the board's README.
 | R1, R4, R5 | 1 MΩ 1% 0805 | 3 | 50 | DigiKey | 311-1.00MCRCT-ND (Yageo RC0805FR-071ML) | $0.034 (10), $0.017 (100) |
 | R2 | 51 kΩ 1% 0805 | 1 | 20 | DigiKey | Yageo RC0805FR-0751KL | ~same as above (check) |
 | R3 | 6.8 kΩ 1% 0805 | 1 | 20 | DigiKey | Yageo RC0805FR-076K8L | ~same (check) |
-| R6, R9 | 1 kΩ 1% 0805 | 2 | 30 | DigiKey | Yageo RC0805FR-071KL | ~same (check) |
-| R7, R10 | 100 kΩ 1% 0805 | 2 | 30 | DigiKey | Yageo RC0805FR-07100KL | ~same (check) |
+| R9 | 1 kΩ 1% 0805 | 1 | 20 | DigiKey | Yageo RC0805FR-071KL | ~same (check) |
+| R10 | 100 kΩ 1% 0805 | 1 | 20 | DigiKey | Yageo RC0805FR-07100KL | ~same (check) |
+| R6 | 10 kΩ 1% 0805 (servo feedback divider) | 1 | 20 | DigiKey | Yageo RC0805FR-0710KL | ~same (check) |
+| R7 | 20 kΩ 1% 0805 (servo feedback divider) | 1 | 20 | DigiKey | Yageo RC0805FR-0720KL | ~same (check) |
 | R8 | 330 Ω 1% 0805 | 1 | 20 | DigiKey | Yageo RC0805FR-07330RL | ~same (check) |
 | J1 | JST PH 2-pin vertical header | 1 | 12 | DigiKey | JST B2B-PH-K-S(LF)(SN) | $0.12 (check) |
 | — | JST PH 2-pin housing + crimps (battery holder lead) | 1 + 2 | 12 + 30 | DigiKey | PHR-2 + SPH-002T-P0.5S | $0.10, ~$0.04 | Needs a crimper; or solder the holder leads straight into J1's holes |

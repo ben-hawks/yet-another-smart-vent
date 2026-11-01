@@ -15,8 +15,10 @@ PCB,C6 C7,100nF 50V X7R 0805,2,30,DigiKey,1276-1003-1-ND,Samsung CL21B104KBCNNNC
 PCB,R1 R4 R5,1M 1% 0805,3,50,DigiKey,311-1.00MCRCT-ND,Yageo RC0805FR-071ML,0.034,qty 10,0.017 @100
 PCB,R2,51k 1% 0805,1,20,DigiKey,,Yageo RC0805FR-0751KL,,check,
 PCB,R3,6.8k 1% 0805,1,20,DigiKey,,Yageo RC0805FR-076K8L,,check,
-PCB,R6 R9,1k 1% 0805,2,30,DigiKey,,Yageo RC0805FR-071KL,,check,
-PCB,R7 R10,100k 1% 0805,2,30,DigiKey,,Yageo RC0805FR-07100KL,,check,
+PCB,R9,1k 1% 0805,1,20,DigiKey,,Yageo RC0805FR-071KL,,check,
+PCB,R10,100k 1% 0805,1,20,DigiKey,,Yageo RC0805FR-07100KL,,check,
+PCB,R6,10k 1% 0805,1,20,DigiKey,,Yageo RC0805FR-0710KL,,check,servo feedback divider
+PCB,R7,20k 1% 0805,1,20,DigiKey,,Yageo RC0805FR-0720KL,,check,servo feedback divider
 PCB,R8,330R 1% 0805,1,20,DigiKey,,Yageo RC0805FR-07330RL,,check,
 PCB,J1,JST PH 2-pin vertical header,1,12,DigiKey,,JST B2B-PH-K-S(LF)(SN),0.12,check,
 PCB,,JST PH 2-pin housing,1,12,DigiKey,,JST PHR-2,0.10,check,For the battery holder lead

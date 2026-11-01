@@ -42,7 +42,7 @@ For a 10-vent order with distributor part numbers and prices, see [BOM.md](BOM.m
 | 1 | 18650 Li-ion cell, **protected**, 3000–3500 mAh | A protected cell has a built-in protection circuit |
 | 1 | Single-18650 holder with wire leads | Stands upright in the tower |
 | 2 | 1 MΩ resistor | Battery voltage divider |
-| 1 | 1 kΩ + 1 × 100 kΩ resistor | Servo feedback: series protection + pull-down (the FT90M-FB already outputs 0.04–3.2 V) |
+| 1 | 10 kΩ + 1 × 20 kΩ resistor | Servo feedback divider: the FT90M-FB's feedback can reach 4.45 V (Feetech spec sheet), above the ESP32-C6 ADC's limit |
 | 1 | 100 nF capacitor | Across the lower 1 MΩ resistor (steadies the ADC reading) |
 | 9 | M3 heat-set insert, 4.6 mm OD × 5.7 mm long (4.0 mm hole, 7 mm deep in the model) | 4 centre joint, 2 lid, 3 louver axles |
 | 2 | M3 × 10 flat-head screw | Centre joint, top (through the grille) |

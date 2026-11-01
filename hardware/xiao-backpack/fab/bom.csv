@@ -8,11 +8,13 @@ J2,1,Servo (GND +5V SIG FB),PinHeader_1x04_P2.54mm_Vertical,1x4 2.54 mm header
 J3,1,Limit switch,PinHeader_1x02_P2.54mm_Vertical,1x2 2.54 mm header
 L1,1,10u,L_Bourns_SRN6045TA_HandSolder,"Bourns SRN6045TA-100M (10 uH, Isat 4.6 A, 52 mOhm); footprint is its land pattern with pads extended for hand soldering"
 R1 R4 R5,3,1M,R_0805_2012Metric_Pad1.20x1.40mm_HandSolder,0805
+R10,1,100k,R_0805_2012Metric_Pad1.20x1.40mm_HandSolder,0805
 R2,1,51k,R_0805_2012Metric_Pad1.20x1.40mm_HandSolder,0805
 R3,1,6.8k,R_0805_2012Metric_Pad1.20x1.40mm_HandSolder,0805
-R6 R9,2,1k,R_0805_2012Metric_Pad1.20x1.40mm_HandSolder,0805
-R7 R10,2,100k,R_0805_2012Metric_Pad1.20x1.40mm_HandSolder,0805
+R6,1,10k,R_0805_2012Metric_Pad1.20x1.40mm_HandSolder,0805
+R7,1,20k,R_0805_2012Metric_Pad1.20x1.40mm_HandSolder,0805
 R8,1,330,R_0805_2012Metric_Pad1.20x1.40mm_HandSolder,0805
+R9,1,1k,R_0805_2012Metric_Pad1.20x1.40mm_HandSolder,0805
 TP1,1,BAT+ to XIAO,TestPoint_THTPad_1.5x1.5mm_Drill0.7mm,wire pad
 TP2,1,BAT- to XIAO,TestPoint_THTPad_1.5x1.5mm_Drill0.7mm,wire pad
 U1,1,TPS22917DBV,SOT-23-6_Handsoldering,TI TPS22917DBVR load switch
