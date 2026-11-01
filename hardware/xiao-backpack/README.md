@@ -17,7 +17,7 @@ circuitry. The XIAO ESP32-C6 plugs onto it with its two 1×7 headers.
 | Battery in | J1 (JST-PH 2 mm), TP1/TP2 | TP1/TP2 are wire pads. Run short wires through the window to the XIAO's BAT+/BAT− pads, which charge the cell over USB-C |
 | Servo power switch | U1 TPS22917 load switch, C1, C2 (soft start), R1 (keeps it off) | Cuts the cell off completely between moves (nanoamp leakage). Its ON pin is XIAO **D3** |
 | 5 V boost | U2 MT3608, L1 10 µH, D1 SS34, C3–C5 22 µF, R2/R3 | Vout = 0.6 V × (1 + 75k/10k) = 5.1 V. Only powered while U1 is on |
-| Servo | J2: GND, +5V, SIG, FB | SIG from **D2** through R8 (330 Ω). FB through a 10k/20k divider (R6/R7, C7) to **D1** |
+| Servo | J2: GND, +5V, SIG, FB | SIG from **D2** through R8 (330 Ω). FB (0–3.3 V on the SER0046) through R6 1 kΩ to **D1**, with R7 100 kΩ pull-down and C7 filter |
 | Battery sense | R4/R5 1M/1M, C6 | To **D0**. Draws about 2 µA |
 | Limit switch | J3 | Fed from **D3** through R9 (1 kΩ), returns to **D4** with R10 (100 kΩ) pull-down. Only live while the servo is powered |
 

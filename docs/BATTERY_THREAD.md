@@ -31,16 +31,18 @@ to an H2 board with only pin and board changes.
 
 ## Parts list
 
+For a 10-vent order with distributor part numbers and prices, see [BOM.md](BOM.md).
+
 | Qty | Part | Notes |
 |---|---|---|
 | 1 | Seeed Studio XIAO ESP32-C6 | Battery pads and USB-C charging on board |
-| 1 | DFRobot DMS-MG90-A servo | Same as upstream (analog position feedback) |
+| 1 | DFRobot SER0046 servo | 9 g, 270°, metal gear, 0–3.3 V analog position feedback (red +, black −, white signal, brown feedback) |
 | 1 | 5 V regulator with an enable pin and **true output disconnect** | e.g. Pololu S7V8F5 (buck-boost). Many boost boards pass the battery voltage through when disabled, so check in test step 2 |
 | 1 | Panasonic ESE-11HS2 detector switch | Closed limit switch, same as upstream |
 | 1 | 18650 Li-ion cell, **protected**, 3000–3500 mAh | A protected cell has a built-in protection circuit |
 | 1 | Single-18650 holder with wire leads | Stands upright in the tower |
 | 2 | 1 MΩ resistor | Battery voltage divider |
-| 1 | 10 kΩ + 1 × 20 kΩ resistor | Servo feedback divider (5 V → 3.3 V) |
+| 1 | 1 kΩ + 1 × 100 kΩ resistor | Servo feedback: series protection + pull-down (the SER0046 already outputs 0–3.3 V) |
 | 1 | 100 nF capacitor | Across the lower 1 MΩ resistor (steadies the ADC reading) |
 | 9 | M3 heat-set insert, 4.6 mm OD × 5.7 mm long (4.0 mm hole, 7 mm deep in the model) | 4 centre joint, 2 lid, 3 louver axles |
 | 2 | M3 × 10 flat-head screw | Centre joint, top (through the grille) |
@@ -58,7 +60,7 @@ If your inserts need a different hole size, change `insert_d` and
 | Cell + | XIAO `BAT+` pad, regulator `VIN`, top of the 1 MΩ/1 MΩ divider |
 | Cell − | XIAO `BAT-` pad, regulator `GND`, servo GND (brown), bottom of both dividers |
 | 1 MΩ/1 MΩ midpoint (+100 nF to GND) | `D0` (GPIO0) |
-| Servo feedback wire → 10 kΩ → midpoint → 20 kΩ → GND | midpoint to `D1` (GPIO1) |
+| Servo feedback wire → 1 kΩ → `D1` (GPIO1), 100 kΩ from `D1` to GND | |
 | Servo signal (orange) | `D2` (GPIO2) |
 | `D3` (GPIO21) | Regulator `EN` **and** one leg of the limit switch |
 | Other leg of the limit switch | `D4` (GPIO22), which uses its internal pull-down |

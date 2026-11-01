@@ -1,4 +1,4 @@
-# Battery + Thread smart vent: Seeed XIAO ESP32-C6 + DFRobot DMS-MG90-A.
+# Battery + Thread smart vent: Seeed XIAO ESP32-C6 + DFRobot SER0046 servo.
 #
 # Needs a Thread border router in Home Assistant. Put the network's
 # dataset in secrets.yaml as `thread_tlv` (Settings -> Devices & services ->
@@ -12,7 +12,7 @@ substitutions:
   name: yet-another-smart-vent
   friendly_name: Smart Vent
   repo_ref: main
-  ninety_degree_servo_distance: '0.77'
+  ninety_degree_servo_distance: '0.67'  # 270 deg SER0046
   invert_value: '1'
   servo_transition_length: 3s
   servo_transition_length_ms: '3000'  # keep in sync with the line above
