@@ -70,7 +70,7 @@ PARTS = [
      {"1": "SW", "2": "GND", "3": "FB", "4": "VSW", "5": "VSW", "6": None},
      (106.68, 63.5), (12.4, 9.2, 0), {}),
     ("C3", "Device:C", "22u 10V", C1206, {"1": "VSW", "2": "GND"}, (88.9, 76.2), (12.4, 13.2, 0), {}),
-    ("L1", "Device:L", "10u", "Inductor_SMD:L_Taiyo-Yuden_NR-60xx_HandSoldering",
+    ("L1", "Device:L", "10u", f"{NAME}:L_Bourns_SRN6045TA_HandSolder",
      {"1": "VSW", "2": "SW"}, (101.6, 50.8), (19.0, 9.4, 0), {}),
     ("D1", "Device:D_Schottky", "SS34", "Diode_SMD:D_SMA_Handsoldering",
      {"1": "V5", "2": "SW"}, (124.46, 55.88), (19.0, 15.8, 180), {}),
@@ -239,6 +239,18 @@ def write_library():
     pretty = LIB / f"{NAME}.pretty"
     pretty.mkdir(exist_ok=True)
     (pretty / "XIAO_ESP32C6_Backpack.kicad_mod").write_text(fp)
+
+    # Bourns SRN6045TA land pattern with each pad extended 0.8 mm outward, so
+    # an iron can reach the (mostly underneath) terminals. Inner pad edges
+    # stay where Bourns puts them (+/-0.9 mm).
+    srn = (KICAD_FP / "Inductor_SMD.pretty" / "L_Bourns_SRN6045TA.kicad_mod").read_text()
+    srn = srn.replace('(footprint "L_Bourns_SRN6045TA"', '(footprint "L_Bourns_SRN6045TA_HandSolder"', 1)
+    srn = srn.replace('(pad "1" smd rect (at -2.075 0) (size 2.35 5.1)', '(pad "1" smd rect (at -2.475 0) (size 3.15 5.1)')
+    srn = srn.replace('(pad "2" smd rect (at 2.075 0) (size 2.35 5.1)', '(pad "2" smd rect (at 2.475 0) (size 3.15 5.1)')
+    srn = re.sub(r"\(start (-?)3\.5 (-?3\.25)\) \(end (-?)3\.5 (-?3\.25)\) \(layer \"F\.CrtYd\"\)",
+                 r'(start \g<1>4.3 \2) (end \g<3>4.3 \4) (layer "F.CrtYd")', srn)
+    assert srn.count("size 3.15 5.1") == 2 and srn.count("4.3 ") >= 4, "SRN6045TA footprint changed upstream"
+    (pretty / "L_Bourns_SRN6045TA_HandSolder.kicad_mod").write_text(srn)
 
     (HERE / "sym-lib-table").write_text(
         f'(sym_lib_table\n  (lib (name "{NAME}")(type "KiCad")(uri "${{KIPRJMOD}}/lib/{NAME}.kicad_sym")(options "")(descr ""))\n)\n')
@@ -474,7 +486,7 @@ def build_pcb(freerouting_jar=None, ses_in=None):
         print(f"routed: {n_tracks} track segments, {n_vias} vias")
         dropped = drop_gnd_tracks_near_window(board)
         if dropped:
-            print(f"dropped {dropped} GND track(s) too close to the battery window (the pours carry GND)")
+            print(f"dropped {dropped} GND track(s) crowding the battery window or other pads (the pours carry GND)")
     else:
         print(f"not routed: route {dsn.relative_to(HERE)} and re-run with --ses <file>")
 
@@ -545,6 +557,20 @@ def drop_gnd_tracks_near_window(board, clearance=0.3):
                    for i in range(n + 1))
         if near - half < clearance:
             drop.append(t)
+    # Also GND tracks that now crowd a non-GND pad (e.g. a pad grown for hand
+    # soldering after routing).
+    pads = [p for fp in board.GetFootprints() for p in fp.Pads() if p.GetNetname() not in ("GND", "")]
+    for t in board.GetTracks():
+        if t in drop or t.GetNetname() != "GND" or t.Type() != pcbnew.PCB_TRACE_T:
+            continue
+        seg = pcbnew.SEG(t.GetStart(), t.GetEnd())
+        need = pcbnew.FromMM(DEFAULT_CLEARANCE) + t.GetWidth() // 2
+        for p in pads:
+            if not p.IsOnLayer(t.GetLayer()):
+                continue
+            if p.GetEffectivePolygon().Collide(seg, need):
+                drop.append(t)
+                break
     for t in drop:
         board.Remove(t)
     return len(drop)
@@ -670,7 +696,7 @@ def check_and_export(pcb_path):
 BOM_NOTES = {
     "U1": "TI TPS22917DBVR load switch",
     "U2": "MT3608 boost (SOT-23-6)",
-    "L1": "10 uH shielded, 6x6 mm, Isat >= 2.5 A, DCR < 0.1 ohm (e.g. Taiyo Yuden NR6045 family; check Isat)",
+    "L1": "Bourns SRN6045TA-100M (10 uH, Isat 4.6 A, 52 mOhm); footprint is its land pattern with pads extended for hand soldering",
     "D1": "SS34 (40 V 3 A Schottky, SMA) or SS24",
     "J1": "JST B2B-PH-K-S (2 mm). CHECK the battery lead polarity: pin 1 = +",
     "J2": "1x4 2.54 mm header",

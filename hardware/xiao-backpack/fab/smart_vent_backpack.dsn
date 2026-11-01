@@ -74,7 +74,7 @@
     (component Diode_SMD:D_SMA_Handsoldering
       (place D1 19500.000000 -16300.000000 front 180.000000 (PN SS34))
     )
-    (component "Inductor_SMD:L_Taiyo-Yuden_NR-60xx_HandSoldering"
+    (component smart_vent_backpack:L_Bourns_SRN6045TA_HandSolder
       (place L1 20000.000000 -9500.000000 front 0.000000 (PN 10u))
     )
     (component "Package_TO_SOT_SMD:SOT-23-6_Handsoldering"
@@ -196,27 +196,23 @@
       (pin RoundRect[T]Pad_3500x1800_250.951_um_0.000000_0 1 -2500 0)
       (pin RoundRect[T]Pad_3500x1800_250.951_um_0.000000_0 2 2500 0)
     )
-    (image "Inductor_SMD:L_Taiyo-Yuden_NR-60xx_HandSoldering"
-      (outline (path signal 120  -4000 -3100  4000 -3100))
-      (outline (path signal 120  -4000 3100  4000 3100))
-      (outline (path signal 50  -4250 3250  -4250 -3250))
-      (outline (path signal 50  4250 3250  -4250 3250))
-      (outline (path signal 50  4250 -3250  4250 3250))
-      (outline (path signal 50  -4250 -3250  4250 -3250))
-      (outline (path signal 100  3000 0  3000 2000))
-      (outline (path signal 100  3000 2000  2000 3000))
-      (outline (path signal 100  3000 0  3000 -2000))
-      (outline (path signal 100  -3000 -2000  -2000 -3000))
-      (outline (path signal 100  -2000 3000  0 3000))
-      (outline (path signal 100  -3000 2000  -2000 3000))
-      (outline (path signal 100  -3000 0  -3000 -2000))
-      (outline (path signal 100  2000 -3000  0 -3000))
-      (outline (path signal 100  -3000 0  -3000 2000))
-      (outline (path signal 100  2000 3000  0 3000))
-      (outline (path signal 100  3000 -2000  2000 -3000))
-      (outline (path signal 100  -2000 -3000  0 -3000))
-      (pin Rect[T]Pad_2450x5900_um 1 -2775 0)
-      (pin Rect[T]Pad_2450x5900_um 2 2775 0)
+    (image smart_vent_backpack:L_Bourns_SRN6045TA_HandSolder
+      (outline (path signal 120  3100 3100  3100 2650))
+      (outline (path signal 120  -3100 3100  -3100 2650))
+      (outline (path signal 120  3100 -3100  -3100 -3100))
+      (outline (path signal 120  3100 -3100  3100 -2650))
+      (outline (path signal 120  -3100 -3100  -3100 -2650))
+      (outline (path signal 120  -3100 3100  3100 3100))
+      (outline (path signal 50  -4300 3250  -4300 -3250))
+      (outline (path signal 50  4300 -3250  4300 3250))
+      (outline (path signal 50  4300 3250  -4300 3250))
+      (outline (path signal 50  -4300 -3250  4300 -3250))
+      (outline (path signal 100  -3000 3000  3000 3000))
+      (outline (path signal 100  -3000 3000  -3000 -3000))
+      (outline (path signal 100  -3000 -3000  3000 -3000))
+      (outline (path signal 100  3000 -3000  3000 3000))
+      (pin Rect[T]Pad_3150x5100_um 1 -2475 0)
+      (pin Rect[T]Pad_3150x5100_um 2 2475 0)
     )
     (image "Package_TO_SOT_SMD:SOT-23-6_Handsoldering"
       (outline (path signal 120  -900 -1610  900 -1610))
@@ -384,8 +380,8 @@
             -780.618 162.5))
       (attach off)
     )
-    (padstack Rect[T]Pad_2450x5900_um
-      (shape (rect F.Cu -1225 -2950 1225 2950))
+    (padstack Rect[T]Pad_3150x5100_um
+      (shape (rect F.Cu -1575 -2550 1575 2550))
       (attach off)
     )
     (padstack Rect[A]Pad_1500x1500_um

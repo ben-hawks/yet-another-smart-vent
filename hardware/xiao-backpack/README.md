@@ -45,6 +45,28 @@ firmware needs no changes.
   sit underneath it. Solder the battery wires to the XIAO's BAT pads before
   stacking the boards.
 
+## Hand soldering
+
+Everything is hand-solderable with a fine-tip iron, flux and tweezers:
+- 0805 and 1206 parts on KiCad's hand-solder pads.
+- Both ICs are SOT-23-6 (0.95 mm pitch) on the hand-solder variant.
+- The inductor's terminals are mostly under its body, so its pads extend
+  0.8 mm past the Bourns land pattern for the iron. Tin one pad, place the
+  part, then heat the extended pad until solder wicks under.
+- No vias sit in pads, and ground pads use thermal spokes, so they heat up
+  normally.
+
+Suggested order:
+1. The low parts under the XIAO (R1, R4–R10, C6, C7). They're unreachable
+   once the XIAO is fitted.
+2. U1, U2, C1–C5, R2, R3, D1, then L1.
+3. Before fitting the XIAO, check that 5 V comes up: connect the cell and
+   pull D3 (SRV_EN) high through about 1 kΩ. J2 pin 2 should read about
+   5.1 V, and about 0 V again once D3 is released.
+4. J1, J2 and J3, then the XIAO socket headers. Solder the battery wires to
+   the XIAO's BAT pads, pass them through the window, and solder them to
+   TP1 (+) and TP2 (−).
+
 ## Routing
 
 `generate.py` builds everything from one parts table: the schematic (net
