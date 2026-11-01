@@ -36,13 +36,13 @@ For a 10-vent order with distributor part numbers and prices, see [BOM.md](BOM.m
 | Qty | Part | Notes |
 |---|---|---|
 | 1 | Seeed Studio XIAO ESP32-C6 | Battery pads and USB-C charging on board |
-| 1 | DFRobot SER0046 servo | 9 g, 270°, metal gear, 0–3.3 V analog position feedback (red +, black −, white signal, brown feedback) |
+| 1 | Feetech FT90M-FB servo | Micro, metal gear, 280°, **rated −15 to 70 °C** (supply air reaches ~54 °C), 0.04–3.2 V analog position feedback on a 4th wire. Check the wire colours on arrival |
 | 1 | 5 V regulator with an enable pin and **true output disconnect** | e.g. Pololu S7V8F5 (buck-boost). Many boost boards pass the battery voltage through when disabled, so check in test step 2 |
 | 1 | Panasonic ESE-11HS2 detector switch | Closed limit switch, same as upstream |
 | 1 | 18650 Li-ion cell, **protected**, 3000–3500 mAh | A protected cell has a built-in protection circuit |
 | 1 | Single-18650 holder with wire leads | Stands upright in the tower |
 | 2 | 1 MΩ resistor | Battery voltage divider |
-| 1 | 1 kΩ + 1 × 100 kΩ resistor | Servo feedback: series protection + pull-down (the SER0046 already outputs 0–3.3 V) |
+| 1 | 1 kΩ + 1 × 100 kΩ resistor | Servo feedback: series protection + pull-down (the FT90M-FB already outputs 0.04–3.2 V) |
 | 1 | 100 nF capacitor | Across the lower 1 MΩ resistor (steadies the ADC reading) |
 | 9 | M3 heat-set insert, 4.6 mm OD × 5.7 mm long (4.0 mm hole, 7 mm deep in the model) | 4 centre joint, 2 lid, 3 louver axles |
 | 2 | M3 × 10 flat-head screw | Centre joint, top (through the grille) |

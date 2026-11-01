@@ -10,7 +10,7 @@ are cheap. A spreadsheet version is in [`bom-10-vents.csv`](bom-10-vents.csv).
 | Part | Per vent | Qty (10) | Source | Part number | Unit price | Notes |
 |---|---|---|---|---|---|---|
 | Seeed XIAO ESP32-C6 | 1 | 10 | DigiKey | 1597-113991254-ND (113991254) | $5.38 (qty 1) | No headers; solder your own |
-| DFRobot servo, 270°, analog feedback | 1 | 10 | DFRobot | SER0046 | $6.30 (10+) | Not found on DigiKey. **Not SER0039**, which has no feedback wire |
+| Feetech FT90M-FB servo (metal gear, analog feedback) | 1 | 10 | Alibaba | Feetech FT90M-FB | ~$6 | Rated −15 to 70 °C (the DFRobot SER0046 is only 50 °C). **Make sure it is the 4-wire -FB version**; RobotShop EU has it at €10.50 |
 | Protected 18650 cell, 3400 mAh, button top | 1 | 10 | liionwholesale.com | SW34PCB (Sinowatt SW18650-34MP) | $6.37 (qty 10, your quote) | 69.1 × 18.6 mm. The page showed **out of stock** on 2026-11-01 |
 | 18650 holder with wire leads | 1 | 10 | DigiKey | MPD BH-18650-W | $3.64 (check qty) | **Check that a 69.1 mm protected cell fits.** Order one first |
 | Limit switch | 1 | 10 | DigiKey | P10865S-ND (Panasonic ESE-11HS2) | $0.376 | Same as upstream |
@@ -44,8 +44,8 @@ connectors and headers. See the board's README.
 | XIAO pins | 1×40 male breakaway header, 2.54 mm, straight | 0.5 | 5 | DigiKey | Pololu 965 or similar | ~$0.95–1.49 (qty 1) | XIAO is soldered directly to the backpack (no sockets) to fit the tower |
 | J2, J3 | 1×40 male breakaway header, 2.54 mm, **right-angle** | 0.2 | 2 | DigiKey | any | check | 6 pins per board; plugs exit along the board edge |
 
-The SER0046's leads are red (+), black (−), white (signal) and brown
-(feedback). Check its plug against J2's pin order (GND, +5V, SIG, FB) and
+The FT90M-FB has a 4th feedback wire alongside the usual three. Feetech
+doesn't list its colours, so identify the wires on arrival. Check its plug against J2's pin order (GND, +5V, SIG, FB) and
 re-pin it, or use a 4-pin housing, if they don't match.
 
 ## Hardware and printing

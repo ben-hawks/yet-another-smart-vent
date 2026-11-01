@@ -4,7 +4,8 @@
 #   - Seeed XIAO ESP32-C6, powered from a 1S Li-ion cell on its BAT pads
 #   - 5V regulator with a true-shutdown EN pin feeding the servo
 #     (EN driven by ${servo_power_pin}; the limit switch is also fed from it)
-#   - Analog-feedback servo (DFRobot SER0046, 270 deg, 0-3.3 V feedback);
+#   - Analog-feedback servo (Feetech FT90M-FB: 280 deg, metal gear, rated
+#     -15..70 C, feedback 0.04-3.2 V);
 #     feedback wire through 1k (100k pull-down) -> ${servo_feedback_pin}
 #   - Closed limit switch between ${servo_power_pin} and ${limit_switch_pin}
 #   - 1M/1M divider from VBAT -> ${battery_pin}
@@ -27,10 +28,12 @@ substitutions:
   limit_switch_pin: GPIO22    # [D4]
 
   # --- Mechanics ---
-  # Servo "level" (-1..1) distance for a 90 degree louver swing. 0.67 for a
-  # 270 degree servo (DFRobot SER0046); 0.77 was the upstream MG90 value.
+  # Servo "level" (-1..1) distance for a 90 degree louver swing. ESPHome's
+  # default pulse range (0.6-2.4 ms) covers ~252 of the FT90M-FB's 280 deg
+  # (500-2500 us), so 90 deg is ~0.71. (0.67 for a 270 deg DFRobot SER0046,
+  # 0.77 was the upstream MG90 value.)
   # Fine-tune after the first calibration.
-  ninety_degree_servo_distance: '0.67'
+  ninety_degree_servo_distance: '0.71'
   # 1 or -1, flips sweep direction if the servo is mounted mirrored.
   invert_value: '1'
   servo_transition_length: 3s

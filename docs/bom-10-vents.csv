@@ -1,6 +1,6 @@
 Group,Reference,Part,Per vent,Qty for 10,Source,Distributor PN,MPN,Unit price (USD),Price basis,Notes
 Main,,Seeed XIAO ESP32-C6,1,10,DigiKey,1597-113991254-ND,113991254,5.38,qty 1,
-Main,,Servo 270deg analog feedback,1,10,DFRobot,,SER0046,6.30,qty 10+,Not SER0039 (no feedback wire)
+Main,,Servo metal gear analog feedback (rated -15..70C),1,10,Alibaba,,Feetech FT90M-FB,6.00,approx,Must be the 4-wire -FB version
 Main,,Protected 18650 3400mAh button top,1,10,liionwholesale.com,SW34PCB,Sinowatt SW18650-34MP,6.37,qty 10 (user quote),69.1 x 18.6 mm; out of stock on 2026-11-01
 Main,,18650 holder with wire leads,1,10,DigiKey,,MPD BH-18650-W,3.64,check,Verify protected-cell fit
 Main,,Limit switch,1,10,DigiKey,P10865S-ND,Panasonic ESE-11HS2,0.376,qty 10,

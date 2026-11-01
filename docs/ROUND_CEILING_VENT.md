@@ -2,7 +2,7 @@
 
 A replacement for a 6" round ceiling diffuser such as the AmeriFlow 1500W6
 (9‑15/16" face, 6" duct). It uses the same electronics as the 2x12 floor
-vent: XIAO ESP32-C6 + backpack board, SER0046 feedback servo, limit switch.
+vent: XIAO ESP32-C6 + backpack board, Feetech FT90M-FB feedback servo, limit switch.
 The battery and electronics live in a small **pod on the ceiling beside
 the vent**, out of the warm supply air.
 
@@ -44,7 +44,7 @@ against the real vent and duct, then set them at the top of
 ## Parts
 
 Same electronics as the floor vent ([BOM.md](BOM.md)): XIAO ESP32-C6, backpack
-board, SER0046 servo, ESE-11HS2 limit switch, protected 18650 + holder.
+board, FT90M-FB servo, ESE-11HS2 limit switch, protected 18650 + holder.
 Plus:
 
 | Part | Qty | Notes |

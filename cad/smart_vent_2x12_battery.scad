@@ -56,8 +56,8 @@ insert_depth = 7.0;
 m3_clear     = 3.4;
 m3_head_d    = 6.4;   // countersink diameter for M3 flat head
 
-/* [Servo - DFRobot SER0046 (22.9 x 12.2 x 32.5 mm outline incl. spline): VERIFY WITH CALIPERS] */
-servo_body_len  = 22.8;   // along Y
+/* [Servo - Feetech FT90M-FB (23.2 x 12 x 25.5 mm per Feetech): VERIFY WITH CALIPERS] */
+servo_body_len  = 23.2;   // along Y
 servo_body_w    = 12.2;   // along Z
 servo_shaft_off = 5.9;    // shaft centre from the near end of the body
 servo_tab_hole_spacing = 27.8;

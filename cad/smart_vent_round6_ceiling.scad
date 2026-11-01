@@ -36,10 +36,10 @@ crank_x   = -12;       // X position of the crank fins / link bar
 pin_d     = 1.75 + 0.2;  // 1.75 mm filament pins
 wall      = 2;
 
-/* [Servo - DFRobot SER0046, VERIFY] */
+/* [Servo - Feetech FT90M-FB (23.2 x 12 x 25.5 mm per Feetech), VERIFY] */
 servo_slat    = 4;     // which slat the servo drives (Y = +36)
 servo_top_x   = 29;    // case top (spline side) X position
-servo_case    = [22.8, 12.2, 23];  // along Z, along Y, along X (case height)
+servo_case    = [23.2, 12.2, 23];  // along Z, along Y, along X (case height)
 servo_shaft_off = 5.9; // shaft centre from the case end
 tab_below_top = 6.6;   // tab plane below the case top
 tab_span      = 32.5;
