@@ -23,7 +23,7 @@ This is an untested first revision, so order a small batch.
 | Block | Parts | Notes |
 |---|---|---|
 | Battery in | J1 (JST-PH 2 mm), TP1/TP2 | TP1/TP2 are wire pads. Run short wires through the window to the XIAO's BAT+/BAT− pads, which charge the cell over USB-C |
-| Servo power switch | U1 TPS22917 load switch, C1, C2 (soft start), R1 (keeps it off) | Cuts the cell off completely between moves (nanoamp leakage). Its ON pin is XIAO **D3** |
+| Servo power switch | U1 TPS22917 load switch, C1, R1 (keeps it off); **C2 not fitted** | Cuts the cell off completely between moves (nanoamp leakage). Its ON pin is XIAO **D3** |
 | 5 V boost | U2 MT3608, L1 10 µH, D1 SS34, C3–C5 22 µF, R2/R3 | Vout = 0.6 V × (1 + 51k/6.8k) = 5.1 V (both JLCPCB basic parts). Only powered while U1 is on |
 | Servo | J2: GND, +5V, SIG, FB | SIG from **D2** through R8 (330 Ω). FB (0–3.3 V on the SER0046) through R6 1 kΩ to **D1**, with R7 100 kΩ pull-down and C7 filter |
 | Battery sense | R4/R5 1M/1M, C6 | To **D0**. Draws about 2 µA |
@@ -69,6 +69,26 @@ Upload these three to JLCPCB with **PCB Assembly** turned on (top side, Economic
   cathode band of D1 sit on the marked pads** before confirming. Rotate any
   part that's off there; the files don't need regenerating.
 
+## Design review notes (v0.1)
+
+- **C2 is DNP (not fitted).** TI's datasheet (SLVSDW8B, Table 6-1 and §9)
+  says the CT slew capacitor goes from **CT to VIN**, but this board wires it
+  to GND. CT may float ("fastest timing"). That gives about a 120 µs turn-on
+  and a brief ~0.7 A inrush into C3, which is fine for the 2 A switch and the
+  10 A cell. Fix it properly in the next revision if a slower start is wanted.
+- **Checked against datasheets:** the TPS22917 and MT3608 pinouts, the
+  MT3608 FB voltage (0.6 V), EN tied to the input (allowed), and the input
+  range (2–24 V). GPIO0/1 are ADC1 channels 0/1. None of the pins used
+  (GPIO0, 1, 2, 21, 22) is a strapping pin; those are GPIO4, 5, 8, 9 and 15.
+- **Fit in the vent tower:** solder the XIAO **directly** onto its male
+  headers (no female sockets), and use **right-angle** headers for J2/J3.
+  The pads are the same, and this keeps the stack inside the 17 mm between
+  the cell holder and the partition (1 mm and 0.9 mm clearance). Trim the
+  through-hole leads on the back to about 2 mm.
+- **Battery wire window:** its position comes from Seeed's description
+  ("near D5 / D8"). If the BAT pads end up off the window, route the two
+  wires around the board edge to TP1/TP2.
+
 ## Hand soldering
 
 Everything is hand-solderable with a fine-tip iron, flux and tweezers:
@@ -87,7 +107,8 @@ Suggested order:
 3. Before fitting the XIAO, check that 5 V comes up: connect the cell and
    pull D3 (SRV_EN) high through about 1 kΩ. J2 pin 2 should read about
    5.1 V, and about 0 V again once D3 is released.
-4. J1, J2 and J3, then the XIAO socket headers. Solder the battery wires to
+4. J1, J2 and J3 (right-angle), then the XIAO, soldered directly on its
+   male headers. Solder the battery wires to
    the XIAO's BAT pads, pass them through the window, and solder them to
    TP1 (+) and TP2 (−).
 

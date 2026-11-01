@@ -32,7 +32,6 @@ connectors and headers. See the board's README.
 | D1 | 40 V 3 A Schottky, SMA | 1 | 10 | DigiKey | Diodes Inc B340A-13-F | $0.54 (check stock) |
 | C3, C4, C5 | 22 µF 10 V X5R 1206 | 3 | 30 | DigiKey | 1276-1287-1-ND (Samsung CL31A226KPHNNNE) | $0.283 (10), $0.188 (100) |
 | C1 | 1 µF 25 V X7R 0805 | 1 | 20 | DigiKey | 1276-1066-1-ND (CL21B105KAFNNNE) | $0.059 |
-| C2 | 1 nF 50 V X7R 0805 | 1 | 20 | DigiKey | 1276-1020-1-ND (CL21B102KBANNNC) | $0.042 |
 | C6, C7 | 100 nF 50 V X7R 0805 | 2 | 30 | DigiKey | 1276-1003-1-ND (CL21B104KBCNNNC) | $0.045 |
 | R1, R4, R5 | 1 MΩ 1% 0805 | 3 | 50 | DigiKey | 311-1.00MCRCT-ND (Yageo RC0805FR-071ML) | $0.034 (10), $0.017 (100) |
 | R2 | 51 kΩ 1% 0805 | 1 | 20 | DigiKey | Yageo RC0805FR-0751KL | ~same as above (check) |
@@ -42,8 +41,8 @@ connectors and headers. See the board's README.
 | R8 | 330 Ω 1% 0805 | 1 | 20 | DigiKey | Yageo RC0805FR-07330RL | ~same (check) |
 | J1 | JST PH 2-pin vertical header | 1 | 12 | DigiKey | JST B2B-PH-K-S(LF)(SN) | $0.12 (check) |
 | — | JST PH 2-pin housing + crimps (battery holder lead) | 1 + 2 | 12 + 30 | DigiKey | PHR-2 + SPH-002T-P0.5S | $0.10, ~$0.04 | Needs a crimper; or solder the holder leads straight into J1's holes |
-| — | 1×7 female header, 2.54 mm (XIAO socket) | 2 | 20 | DigiKey | Same Sky SSK02-FPH-254-A7 | $0.38 (qty 1) |
-| J2, J3, XIAO pins | 1×40 male breakaway header, 2.54 mm | 0.5 | 5 | DigiKey | Pololu 965 or similar | ~$0.95–1.49 (qty 1) |
+| XIAO pins | 1×40 male breakaway header, 2.54 mm, straight | 0.5 | 5 | DigiKey | Pololu 965 or similar | ~$0.95–1.49 (qty 1) | XIAO is soldered directly to the backpack (no sockets) to fit the tower |
+| J2, J3 | 1×40 male breakaway header, 2.54 mm, **right-angle** | 0.2 | 2 | DigiKey | any | check | 6 pins per board; plugs exit along the board edge |
 
 The SER0046's leads are red (+), black (−), white (signal) and brown
 (feedback). Check its plug against J2's pin order (GND, +5V, SIG, FB) and

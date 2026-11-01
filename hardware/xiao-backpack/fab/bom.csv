@@ -1,6 +1,5 @@
 References,Qty,Value,Footprint,Notes
 C1,1,1u,C_0805_2012Metric_Pad1.18x1.45mm_HandSolder,0805
-C2,1,1n,C_0805_2012Metric_Pad1.18x1.45mm_HandSolder,0805
 C3 C4 C5,3,22u 25V,C_1206_3216Metric_Pad1.33x1.80mm_HandSolder,22 uF 25 V X5R 1206
 C7 C6,2,100n,C_0805_2012Metric_Pad1.18x1.45mm_HandSolder,0805
 D1,1,SS34,D_SMA_Handsoldering,"SS34 (40 V 3 A Schottky, SMA) or SS24"

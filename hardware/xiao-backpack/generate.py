@@ -121,6 +121,12 @@ PLACE = {
     "R9": (38.6, 5.4, 90), "R1": (38.6, 9.5, 90),
 }
 
+# Parts with a footprint but not fitted. C2: TI wants the CT slew capacitor
+# from CT to VIN (datasheet SLVSDW8B, Table 6-1), but it's wired to GND here.
+# CT is allowed to float (fastest turn-on, ~120 us at 3.6 V; inrush into C3
+# ~0.7 A, fine for the 2 A switch and a 10 A cell), so C2 is left off.
+DNP = {"C2"}
+
 NET_CLASSES = {
     "Power": {"nets": ["VBAT", "GND", "VSW", "SW", "V5"], "track": 0.6, "clearance": 0.2},
 }
@@ -271,7 +277,7 @@ def write_schematic():
     items = []
     for ref, lid, value, fp, pinmap, (sx, sy), _pcb, _ in PARTS:
         pins = symbol_pins(blocks[lid])
-        in_bom = "no" if ref.startswith("#") or ref == "U3" else "yes"
+        in_bom = "no" if ref.startswith("#") or ref == "U3" or ref in DNP else "yes"
         props = [
             f'(property "Reference" "{ref}" (at {sx} {sy - 6.35} 0) (effects (font (size 1.27 1.27)){" hide" if ref.startswith("#") else ""}))',
             f'(property "Value" "{esc(value)}" (at {sx} {sy + 6.35} 0) (effects (font (size 1.27 1.27))))',
@@ -280,7 +286,7 @@ def write_schematic():
         ]
         pin_txt = " ".join(f'(pin "{n}" (uuid {uid()}))' for n in pins)
         items.append(
-            f'  (symbol (lib_id "{lid}") (at {sx} {sy} 0) (unit 1) (in_bom {in_bom}) (on_board {"no" if ref.startswith("#") else "yes"}) (dnp no) (uuid {uid()})\n    '
+            f'  (symbol (lib_id "{lid}") (at {sx} {sy} 0) (unit 1) (in_bom {in_bom}) (on_board {"no" if ref.startswith("#") else "yes"}) (dnp {"yes" if ref in DNP else "no"}) (uuid {uid()})\n    '
             + "\n    ".join(props) + f"\n    {pin_txt}\n"
             f'    (instances (project "{NAME}" (path "/{root}" (reference "{ref}") (unit 1)))))')
         for num, (px, py, ang) in pins.items():
@@ -414,6 +420,10 @@ def build_pcb(freerouting_jar=None, ses_in=None):
         fp.Reference().SetTextSize(pcbnew.VECTOR2I(pcbnew.FromMM(0.8), pcbnew.FromMM(0.8)))
         fp.Reference().SetTextThickness(pcbnew.FromMM(0.12))
         fp.Value().SetVisible(False)
+        if ref in DNP:
+            fp.SetExcludedFromPosFiles(True)
+            fp.SetExcludedFromBOM(True)
+            fp.SetValue(value + " DNP")
         board.Add(fp)
 
     # outline with rounded corners + battery-wire window
@@ -460,6 +470,26 @@ def build_pcb(freerouting_jar=None, ses_in=None):
         board.Add(t)
 
     silk("SMART VENT  v0.1", 12.5, BOARD_H - 1.3, 0.8, pcbnew.B_SilkS)
+    # Connector labels (hand assembly): servo header pins, limit switch,
+    # battery polarity, and the BAT wire pads (soldered from the back).
+    def pad_xy(ref, num):
+        for fp in board.GetFootprints():
+            if fp.GetReference() == ref:
+                for p in fp.Pads():
+                    if p.GetNumber() == num:
+                        return pcbnew.ToMM(p.GetPosition().x), pcbnew.ToMM(p.GetPosition().y)
+    for num, label in (("1", "G"), ("2", "5V"), ("3", "S"), ("4", "FB")):
+        x, y = pad_xy("J2", num)
+        silk(label, x, y + 2.15)
+    x1_, y1_ = pad_xy("J3", "1"); x2_, _ = pad_xy("J3", "2")
+    silk("LIM", (x1_ + x2_) / 2, y1_ + 2.15)
+    for num, label in (("1", "+"), ("2", "-")):
+        x, y = pad_xy("J1", num)
+        silk(label, x, y - 3.9, 1.0)
+    for ref, label, dy in (("TP1", "+", -1.6), ("TP2", "-", 1.6)):
+        x, y = pad_xy(ref, "1")
+        silk(label, x, y + dy, 1.0, pcbnew.B_SilkS)
+        silk(label, x, y + dy, 1.0)
     silk("BAT", (x0 + x1) / 2, y1 + 1.1, 0.8, pcbnew.B_SilkS)
 
     pcb_path = HERE / f"{NAME}.kicad_pcb"
@@ -717,7 +747,6 @@ LCSC = {
     "L1": ("C2046332", "SRN6045TA-100M", "expand"),
     "D1": ("C8678", "SS34", "base"),
     "C1": ("C28323", "CL21B105KBFNNNE", "base"),
-    "C2": ("C46653", "CL21B102KBCNNNC", "base"),
     "C3": ("C12891", "CL31A226KAHNNNE", "base"),
     "C4": ("C12891", "CL31A226KAHNNNE", "base"),
     "C5": ("C12891", "CL31A226KAHNNNE", "base"),
@@ -786,7 +815,7 @@ def write_bom():
     import csv
     rows = {}
     for ref, lid, value, fp, *_ in PARTS:
-        if ref.startswith("#") or ref == "U3":
+        if ref.startswith("#") or ref == "U3" or ref in DNP:
             continue
         key = (value, fp.split(":")[1])
         rows.setdefault(key, []).append(ref)

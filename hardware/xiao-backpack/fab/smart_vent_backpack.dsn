@@ -60,7 +60,7 @@
     (component Capacitor_SMD:C_0805_2012Metric_Pad1.18x1.45mm_HandSolder
       (place C6 46400.000000 -13600.000000 front 90.000000 (PN 100n))
       (place C7 43800.000000 -13600.000000 front 90.000000 (PN 100n))
-      (place C2 8600.000000 -9500.000000 front 90.000000 (PN 1n))
+      (place C2 8600.000000 -9500.000000 front 90.000000 (PN "1n DNP"))
       (place C1 1400.000000 -9500.000000 front 90.000000 (PN 1u))
     )
     (component Connector_PinHeader_2.54mm:PinHeader_1x04_P2.54mm_Vertical

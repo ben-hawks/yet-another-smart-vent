@@ -11,7 +11,6 @@ PCB,L1,10uH 4.6A Isat shielded 6x6,1,10,DigiKey,SRN6045TA-100MCT-ND,Bourns SRN60
 PCB,D1,Schottky 40V 3A SMA,1,10,DigiKey,,Diodes Inc B340A-13-F,0.54,check,
 PCB,C3 C4 C5,22uF 10V X5R 1206,3,30,DigiKey,1276-1287-1-ND,Samsung CL31A226KPHNNNE,0.283,qty 10,0.188 @100
 PCB,C1,1uF 25V X7R 0805,1,20,DigiKey,1276-1066-1-ND,Samsung CL21B105KAFNNNE,0.059,qty 10,
-PCB,C2,1nF 50V X7R 0805,1,20,DigiKey,1276-1020-1-ND,Samsung CL21B102KBANNNC,0.042,qty 10,
 PCB,C6 C7,100nF 50V X7R 0805,2,30,DigiKey,1276-1003-1-ND,Samsung CL21B104KBCNNNC,0.045,qty 10,
 PCB,R1 R4 R5,1M 1% 0805,3,50,DigiKey,311-1.00MCRCT-ND,Yageo RC0805FR-071ML,0.034,qty 10,0.017 @100
 PCB,R2,51k 1% 0805,1,20,DigiKey,,Yageo RC0805FR-0751KL,,check,
@@ -22,8 +21,8 @@ PCB,R8,330R 1% 0805,1,20,DigiKey,,Yageo RC0805FR-07330RL,,check,
 PCB,J1,JST PH 2-pin vertical header,1,12,DigiKey,,JST B2B-PH-K-S(LF)(SN),0.12,check,
 PCB,,JST PH 2-pin housing,1,12,DigiKey,,JST PHR-2,0.10,check,For the battery holder lead
 PCB,,JST PH crimp contact,2,30,DigiKey,,JST SPH-002T-P0.5S,0.04,check,Needs crimper; or solder leads into J1
-PCB,,1x7 female header 2.54mm,2,20,DigiKey,,Same Sky SSK02-FPH-254-A7,0.38,qty 1,XIAO socket
-PCB,J2 J3,1x40 male breakaway header 2.54mm,0.5,5,DigiKey,,Pololu 965 (or similar),0.95,qty 1,Also the XIAO's pins
+PCB,,1x40 male breakaway header 2.54mm straight,0.5,5,DigiKey,,Pololu 965 (or similar),0.95,qty 1,XIAO pins (soldered directly)
+PCB,J2 J3,1x40 male header 2.54mm right-angle,0.2,2,DigiKey,,,,check,6 pins per board
 Hardware,,M3 heat-set insert 4.6OD x 5.7mm,9,90,on hand,,,,,
 Hardware,,M3x8 flat-head screw,6,60,McMaster/Amazon,,,,check,
 Hardware,,M3x10 flat-head screw,2,20,McMaster/Amazon,,,,check,

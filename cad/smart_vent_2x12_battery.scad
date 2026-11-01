@@ -36,7 +36,7 @@ slot_pitch = 7;
 wall       = 2;
 partition_t = 3;      // wall between the louvers and the electronics bay
 bay_len    = 46;      // outer length of the electronics tower
-liner_t    = 3;       // foam liner on the tower's end wall (heat from a gas furnace)
+liner_t    = 2;       // foam liner on the tower's end wall (heat from a gas furnace)
 split_clear = 0.15;   // gap per side at the centre split
 
 /* [Louvers] */
@@ -280,8 +280,16 @@ module link() {
 }
 
 // ---------------------------------------------------------------- lid
+// The electronics are the XIAO backpack PCB (hardware/xiao-backpack, 48 x 19
+// x 1.6 mm) standing upright under the servo, XIAO end (USB-C) down through
+// the lid. The XIAO is soldered straight onto the backpack (2.5 mm header
+// spacer), with the components facing the partition (+X).
 lid_t = 2.5;
-xiao_pos = [tab_x - 8, 6];   // centre of the XIAO footprint (x, y)
+backpack = [19, 48, 1.6];          // width (Y), length (Z), thickness (X)
+bp_stack_top = 12;                // tallest top-side part: JST-PH + plug at the far end (XIAO stack ~7.5)
+bp_x = tab_x - 14.5;               // back (bottom-side) face of the backpack PCB
+bp_y = 0;                          // centre of the board width
+usb_x = bp_x + backpack[2] + 2.5 + 1.2 + 1.6;   // USB-C centre: PCB + spacer + XIAO PCB + half receptacle
 module lid() {
   difference() {
     union() {
@@ -292,18 +300,27 @@ module lid() {
         translate([x0 + wall + 1.8, -inner_w + 1.8, -bay_depth - 1]) cube([bay_len - wall - partition_t - 3.6, 2 * inner_w - 3.6, 4]);
         for (p = lid_screws()) translate([p[0] - 4.5, p[1] - 4.5, -bay_depth - 1]) cube([9, 9, 4]);
       }
-      // XIAO cradle: two grooved posts holding the board upright, USB-C down
-      for (s = [-1, 1]) translate([xiao_pos[0] - 2.5, xiao_pos[1] + s * (xiao[0] / 2 + 0.6) - 1.5, -bay_depth - eps])
+      // backpack cradle: two posts with a groove for each long PCB edge
+      for (s = [-1, 1]) translate([bp_x - 2.2, bp_y + s * (backpack[0] / 2 + 0.3) - (s > 0 ? 0 : 3), -bay_depth - eps])
         difference() {
-          cube([5, 3, 9]);
-          translate([2.5 - (xiao[2] + 0.4) / 2, s > 0 ? -eps : 1.5, -1]) cube([xiao[2] + 0.4, 1.5 + eps, 11]);
+          cube([backpack[2] + 4.4, 3, 12]);
+          translate([2.2 - 0.2, s > 0 ? -eps : 1.5, -1]) cube([backpack[2] + 0.4, 1.5 + eps, 14]);
         }
     }
     for (p = lid_screws()) translate([p[0], p[1], -bay_depth - lid_t]) rotate([180, 0, 0]) m3_countersunk(lid_t + 1);
-    // USB-C plug opening
-    translate([xiao_pos[0] - 3.5, xiao_pos[1] - 6.5, -bay_depth - lid_t - 1]) cube([7, 13, lid_t + 3]);
+    // USB-C plug opening (overmold ~12 x 7 mm)
+    translate([usb_x - 4, bp_y - 6.75, -bay_depth - lid_t - 1]) cube([8, 13.5, lid_t + 3]);
   }
 }
+
+module backpack_ghost() {
+  translate([bp_x, bp_y - backpack[0] / 2, -bay_depth]) cube([backpack[2], backpack[0], backpack[1]]);
+  translate([bp_x + backpack[2], bp_y - backpack[0] / 2, -bay_depth]) cube([bp_stack_top, backpack[0], backpack[1]]);
+}
+
+assert(bp_x - 2.5 > x0 + wall + liner_t + cell_holder[0], "backpack collides with the cell holder");
+assert(bp_x + backpack[2] + bp_stack_top < tab_x, "backpack stack collides with the partition");
+assert(-bay_depth + backpack[1] < louver_axis_z - servo_body_w / 2, "backpack reaches the servo");
 
 // ---------------------------------------------------------------- fit test
 // A short slice of the body + one insert boss: checks boot fit, flange,
@@ -363,5 +380,6 @@ module assembly_clean() {
   color("Tomato") translate([0, 0, -explode * 0.6]) link_in_assembly();
   color("DimGray") translate([0, 0, -explode]) lid();
   color("Black", 0.6) servo_ghost();
+  color("Purple", 0.6) backpack_ghost();
   color("Green", 0.6) translate([x0 + wall + liner_t, -cell_holder[0] / 2, -bay_depth + 2]) cube(cell_holder);
 }
