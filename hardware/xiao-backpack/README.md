@@ -3,12 +3,20 @@
 A 48 × 19 mm two-layer board that holds all of the vent's auxiliary
 circuitry. The XIAO ESP32-C6 plugs onto it with its two 1×7 headers.
 
-![Placement](fab/placement-top.png)
+![Routed board, top and bottom](fab/routed.png)
 
-> **Status: placed but not routed yet.** The schematic and PCB nets match
-> and DRC reports no violations, but the traces still need an autorouter
-> (see [Routing](#routing)). Don't order boards until it's routed and DRC
-> is clean.
+**Status: routed, ready for a first prototype order.** It was autorouted with
+Freerouting 2.5.0 from `fab/smart_vent_backpack.dsn`, and the result is in
+`fab/smart_vent_backpack.ses`. After importing:
+- every net is connected (0 unconnected pads)
+- KiCad 7 DRC reports 0 violations, against fab rules of 0.3 mm to the edge,
+  0.15 mm clearance and 0.12 mm minimum track
+- the PCB's netlist matches the schematic's
+
+Power nets (GND, VBAT, VSW, SW, V5) are 0.6 mm, narrowing to 0.36–0.45 mm
+only at pads. Ground is poured on both layers. Order with
+[`fab/gerbers.zip`](fab/gerbers.zip) (2 layers, 1.6 mm, 1 oz, any colour).
+This is an untested first revision, so order a small batch.
 
 ## Circuit
 
@@ -48,6 +56,7 @@ nets, DRC).
 /usr/bin/python3 generate.py                              # place, write fab/smart_vent_backpack.dsn
 # route fab/smart_vent_backpack.dsn with Freerouting (or similar) -> .ses
 /usr/bin/python3 generate.py --ses fab/smart_vent_backpack.ses   # import routes, pour, DRC, Gerbers
+# GND tracks that hug the battery window are dropped on import (the pours carry GND)
 ```
 
 The router's output can also be imported straight into KiCad (**File →

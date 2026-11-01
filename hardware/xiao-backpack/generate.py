@@ -472,6 +472,9 @@ def build_pcb(freerouting_jar=None, ses_in=None):
     if ses_in:
         n_tracks, n_vias = import_ses(board, Path(ses_in), nets)
         print(f"routed: {n_tracks} track segments, {n_vias} vias")
+        dropped = drop_gnd_tracks_near_window(board)
+        if dropped:
+            print(f"dropped {dropped} GND track(s) too close to the battery window (the pours carry GND)")
     else:
         print(f"not routed: route {dsn.relative_to(HERE)} and re-run with --ses <file>")
 
@@ -516,6 +519,35 @@ def assign_dsn_classes(dsn):
     keep = [n for n in nets if n not in moved]
     text = text[:m.start(1)] + " " + " ".join(keep) + "\n      " + text[m.end(1):]
     dsn.write_text(text)
+
+
+def drop_gnd_tracks_near_window(board, clearance=0.3):
+    """Freerouting keeps copper off internal cutouts but adds no margin, so a
+    GND track can end up hugging the battery-wire window. GND is poured on
+    both layers, so such tracks are redundant: remove them and let the pour
+    (and DRC's connectivity check) take over."""
+    import pcbnew
+    x0, y0, x1, y1 = WINDOW
+
+    def dist_to_rect(px, py):
+        dx = max(x0 - px, 0, px - x1)
+        dy = max(y0 - py, 0, py - y1)
+        return math.hypot(dx, dy)
+
+    drop = []
+    for t in board.GetTracks():
+        if t.GetNetname() != "GND" or t.Type() != pcbnew.PCB_TRACE_T:
+            continue
+        a, b = t.GetStart(), t.GetEnd()
+        half = pcbnew.ToMM(t.GetWidth()) / 2
+        n = 40
+        near = min(dist_to_rect(pcbnew.ToMM(a.x + (b.x - a.x) * i / n), pcbnew.ToMM(a.y + (b.y - a.y) * i / n))
+                   for i in range(n + 1))
+        if near - half < clearance:
+            drop.append(t)
+    for t in drop:
+        board.Remove(t)
+    return len(drop)
 
 
 def import_ses(board, ses_path, nets):
