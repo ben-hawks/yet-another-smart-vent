@@ -17,6 +17,12 @@ are cheap. A spreadsheet version is in [`bom-10-vents.csv`](bom-10-vents.csv).
 
 ## Backpack PCB (`hardware/xiao-backpack`)
 
+**Or skip this table and have JLCPCB assemble it.** Every SMD part has a
+checked LCSC number in
+[`hardware/xiao-backpack/fab/jlcpcb/`](../hardware/xiao-backpack/fab/jlcpcb)
+(BOM + CPL): 11 Basic parts and 3 Extended. You then only hand-solder the
+connectors and headers. See the board's README.
+
 | Ref | Part | Per vent | Qty (10) | Source | Part number | Unit price @10 |
 |---|---|---|---|---|---|---|
 | — | PCB, 48 × 19 mm, 2-layer, 1.6 mm | 1 | 10 | JLCPCB / PCBWay / OSH Park | Gerbers in `hardware/xiao-backpack/fab/gerbers` | check (typically a few dollars for 5–10) |
@@ -29,8 +35,8 @@ are cheap. A spreadsheet version is in [`bom-10-vents.csv`](bom-10-vents.csv).
 | C2 | 1 nF 50 V X7R 0805 | 1 | 20 | DigiKey | 1276-1020-1-ND (CL21B102KBANNNC) | $0.042 |
 | C6, C7 | 100 nF 50 V X7R 0805 | 2 | 30 | DigiKey | 1276-1003-1-ND (CL21B104KBCNNNC) | $0.045 |
 | R1, R4, R5 | 1 MΩ 1% 0805 | 3 | 50 | DigiKey | 311-1.00MCRCT-ND (Yageo RC0805FR-071ML) | $0.034 (10), $0.017 (100) |
-| R2 | 75 kΩ 1% 0805 | 1 | 20 | DigiKey | Yageo RC0805FR-0775KL | ~same as above (check) |
-| R3 | 10 kΩ 1% 0805 | 1 | 20 | DigiKey | Yageo RC0805FR-0710KL | ~same (check) |
+| R2 | 51 kΩ 1% 0805 | 1 | 20 | DigiKey | Yageo RC0805FR-0751KL | ~same as above (check) |
+| R3 | 6.8 kΩ 1% 0805 | 1 | 20 | DigiKey | Yageo RC0805FR-076K8L | ~same (check) |
 | R6, R9 | 1 kΩ 1% 0805 | 2 | 30 | DigiKey | Yageo RC0805FR-071KL | ~same (check) |
 | R7, R10 | 100 kΩ 1% 0805 | 2 | 30 | DigiKey | Yageo RC0805FR-07100KL | ~same (check) |
 | R8 | 330 Ω 1% 0805 | 1 | 20 | DigiKey | Yageo RC0805FR-07330RL | ~same (check) |

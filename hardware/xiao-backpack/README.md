@@ -24,7 +24,7 @@ This is an untested first revision, so order a small batch.
 |---|---|---|
 | Battery in | J1 (JST-PH 2 mm), TP1/TP2 | TP1/TP2 are wire pads. Run short wires through the window to the XIAO's BAT+/BAT− pads, which charge the cell over USB-C |
 | Servo power switch | U1 TPS22917 load switch, C1, C2 (soft start), R1 (keeps it off) | Cuts the cell off completely between moves (nanoamp leakage). Its ON pin is XIAO **D3** |
-| 5 V boost | U2 MT3608, L1 10 µH, D1 SS34, C3–C5 22 µF, R2/R3 | Vout = 0.6 V × (1 + 75k/10k) = 5.1 V. Only powered while U1 is on |
+| 5 V boost | U2 MT3608, L1 10 µH, D1 SS34, C3–C5 22 µF, R2/R3 | Vout = 0.6 V × (1 + 51k/6.8k) = 5.1 V (both JLCPCB basic parts). Only powered while U1 is on |
 | Servo | J2: GND, +5V, SIG, FB | SIG from **D2** through R8 (330 Ω). FB (0–3.3 V on the SER0046) through R6 1 kΩ to **D1**, with R7 100 kΩ pull-down and C7 filter |
 | Battery sense | R4/R5 1M/1M, C6 | To **D0**. Draws about 2 µA |
 | Limit switch | J3 | Fed from **D3** through R9 (1 kΩ), returns to **D4** with R10 (100 kΩ) pull-down. Only live while the servo is powered |
@@ -44,6 +44,30 @@ firmware needs no changes.
 - Mount the XIAO on the **top** with standard headers. Only the 0805 parts
   sit underneath it. Solder the battery wires to the XIAO's BAT pads before
   stacking the boards.
+
+## JLCPCB assembly (PCBA)
+
+Upload these three to JLCPCB with **PCB Assembly** turned on (top side, Economic):
+
+| File | What |
+|---|---|
+| [`fab/gerbers.zip`](fab/gerbers.zip) | Board |
+| [`fab/jlcpcb/bom_jlcpcb.csv`](fab/jlcpcb/bom_jlcpcb.csv) | Comment, Designator, Footprint, LCSC Part # |
+| [`fab/jlcpcb/cpl_jlcpcb.csv`](fab/jlcpcb/cpl_jlcpcb.csv) | Designator, Mid X, Mid Y, Layer, Rotation |
+
+- **What JLCPCB places:** all 21 SMD parts. 11 BOM lines are JLCPCB
+  **Basic** parts. 3 are **Extended**, which carries a feeder fee per order:
+  TPS22917DBVR (C2681320), MT3608 (C84817) and SRN6045TA-100M (C2046332).
+  Part numbers and stock were checked against JLCPCB's parts library on
+  2026-11-01.
+- **Left for you:** the through-hole parts (J1 JST-PH C131337, J2, J3, the
+  XIAO socket headers and the TP1/TP2 wire pads) aren't in the files. Solder
+  them yourself, or add them to the order if you want JLCPCB's through-hole
+  service.
+- **Rotations:** the CPL applies JLCPCB's usual +180° for SOT-23 parts. In
+  JLCPCB's placement preview, **check that pin 1 of U1 and U2 and the
+  cathode band of D1 sit on the marked pads** before confirming. Rotate any
+  part that's off there; the files don't need regenerating.
 
 ## Hand soldering
 

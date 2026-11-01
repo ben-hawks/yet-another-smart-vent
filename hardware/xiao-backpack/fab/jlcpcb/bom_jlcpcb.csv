@@ -1,0 +1,15 @@
+Comment,Designator,Footprint,LCSC Part #
+1u,C1,C_0805_2012Metric_Pad1.18x1.45mm_HandSolder,C28323
+1n,C2,C_0805_2012Metric_Pad1.18x1.45mm_HandSolder,C46653
+22u 25V,"C3,C4,C5",C_1206_3216Metric_Pad1.33x1.80mm_HandSolder,C12891
+100n,"C6,C7",C_0805_2012Metric_Pad1.18x1.45mm_HandSolder,C49678
+SS34,D1,D_SMA_Handsoldering,C8678
+10u,L1,L_Bourns_SRN6045TA_HandSolder,C2046332
+1M,"R1,R4,R5",R_0805_2012Metric_Pad1.20x1.40mm_HandSolder,C17514
+51k,R2,R_0805_2012Metric_Pad1.20x1.40mm_HandSolder,C17737
+6.8k,R3,R_0805_2012Metric_Pad1.20x1.40mm_HandSolder,C17772
+1k,"R6,R9",R_0805_2012Metric_Pad1.20x1.40mm_HandSolder,C17513
+100k,"R7,R10",R_0805_2012Metric_Pad1.20x1.40mm_HandSolder,C149504
+330,R8,R_0805_2012Metric_Pad1.20x1.40mm_HandSolder,C17630
+TPS22917DBV,U1,SOT-23-6_Handsoldering,C2681320
+MT3608,U2,SOT-23-6_Handsoldering,C84817

@@ -1,7 +1,7 @@
 References,Qty,Value,Footprint,Notes
 C1,1,1u,C_0805_2012Metric_Pad1.18x1.45mm_HandSolder,0805
 C2,1,1n,C_0805_2012Metric_Pad1.18x1.45mm_HandSolder,0805
-C3 C4 C5,3,22u 10V,C_1206_3216Metric_Pad1.33x1.80mm_HandSolder,22 uF 10 V X5R/X7R 1206
+C3 C4 C5,3,22u 25V,C_1206_3216Metric_Pad1.33x1.80mm_HandSolder,22 uF 25 V X5R 1206
 C7 C6,2,100n,C_0805_2012Metric_Pad1.18x1.45mm_HandSolder,0805
 D1,1,SS34,D_SMA_Handsoldering,"SS34 (40 V 3 A Schottky, SMA) or SS24"
 J1,1,Battery (JST-PH),JST_PH_B2B-PH-K_1x02_P2.00mm_Vertical,JST B2B-PH-K-S (2 mm). CHECK the battery lead polarity: pin 1 = +
@@ -9,8 +9,8 @@ J2,1,Servo (GND +5V SIG FB),PinHeader_1x04_P2.54mm_Vertical,1x4 2.54 mm header
 J3,1,Limit switch,PinHeader_1x02_P2.54mm_Vertical,1x2 2.54 mm header
 L1,1,10u,L_Bourns_SRN6045TA_HandSolder,"Bourns SRN6045TA-100M (10 uH, Isat 4.6 A, 52 mOhm); footprint is its land pattern with pads extended for hand soldering"
 R1 R4 R5,3,1M,R_0805_2012Metric_Pad1.20x1.40mm_HandSolder,0805
-R2,1,75k,R_0805_2012Metric_Pad1.20x1.40mm_HandSolder,0805
-R3,1,10k,R_0805_2012Metric_Pad1.20x1.40mm_HandSolder,0805
+R2,1,51k,R_0805_2012Metric_Pad1.20x1.40mm_HandSolder,0805
+R3,1,6.8k,R_0805_2012Metric_Pad1.20x1.40mm_HandSolder,0805
 R6 R9,2,1k,R_0805_2012Metric_Pad1.20x1.40mm_HandSolder,0805
 R7 R10,2,100k,R_0805_2012Metric_Pad1.20x1.40mm_HandSolder,0805
 R8,1,330,R_0805_2012Metric_Pad1.20x1.40mm_HandSolder,0805
