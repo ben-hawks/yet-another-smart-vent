@@ -270,4 +270,6 @@ else if (part == "link") link();
 else if (part == "pod_base") pod_base();
 else if (part == "pod_cover") translate([0, 0, pod_h]) mirror([0, 0, 1]) pod_cover();   // top down
 else for (i = [0 : n_slats - 1]) if (part == str("slat", i))
-  translate([0, 0, chord / 2]) rotate([90, 0, 0]) translate([0, -y_of(i), -z_axis]) slat(i);   // printed on edge
+  // printed on edge, with the edge nearer the vent centre (the longest, straight one) on the bed,
+  // so the circle-cut ends only lean inward going up: no overhangs, maximum bed contact
+  translate([0, 0, chord / 2]) rotate([y_of(i) < 0 ? -90 : 90, 0, 0]) translate([0, -y_of(i), -z_axis]) slat(i);
