@@ -5,6 +5,8 @@ Main,,Protected 18650 3400mAh button top,1,10,liionwholesale.com,SW34PCB,Sinowat
 Main,,18650 holder with wire leads,1,10,DigiKey,,MPD BH-18650-W,3.64,check,Verify protected-cell fit
 Main,,Limit switch,1,10,DigiKey,P10865S-ND,Panasonic ESE-11HS2,0.376,qty 10,
 PCB,,Backpack PCB 48x19mm 2-layer,1,10,JLCPCB/PCBWay/OSH Park,,,,check,Gerbers in hardware/xiao-backpack/fab/gerbers
+PCB,Q1,P-MOSFET SOT-23 (reverse-polarity protection),1,12,DigiKey / LCSC C15127,,Alpha & Omega AO3401A,0.40,approx,
+PCB,C2,1nF 50V X7R 0805 (load switch slew rate),1,20,DigiKey / LCSC C46653,,Samsung CL21B102KBCNNNC,0.05,approx,
 PCB,U1,Load switch,1,10,DigiKey,296-50498-1-ND,TI TPS22917DBVR,0.407,qty 10,
 PCB,U2,Boost converter,1,12,LCSC,C84817,MT3608,,check,Not stocked by DigiKey
 PCB,L1,10uH 4.6A Isat shielded 6x6,1,10,DigiKey,SRN6045TA-100MCT-ND,Bourns SRN6045TA-100M,0.408,qty 10,

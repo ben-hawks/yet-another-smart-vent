@@ -45,6 +45,9 @@ tab_below_top = 6.6;   // tab plane below the case top
 tab_span      = 32.5;
 tab_hole_spacing = 27.8;
 
+/* [Limit switch - Panasonic ESE-11HS2 (8.6 x 4.5 x 3.6 mm): CHECK THE LEVER ON YOURS] */
+sw_gap = 5.0;   // pad underside above slat 0's top face when closed: switch body + lever travel to its ON point
+
 /* [Pod] */
 cell_holder = [78, 21, 21];      // 18650 holder L x W x H
 backpack    = [48, 19, 15];      // PCB L x W x stack height
@@ -107,7 +110,7 @@ module internals() {
     cube([R_in, servo_case[1] + 8, 3]);
   // limit switch pad: above slat 0's +Y edge near the -X wall. That edge
   // drops as the vent opens, so the switch is pressed only when closed.
-  translate([-R_in - 1, y_of(0) + chord / 2 - 4, z_axis + plate_t / 2 + 4]) cube([R_in + 1 - 24, 6, 5]);
+  translate([-R_in - 1, y_of(0) + chord / 2 - 4, z_axis + plate_t / 2 + sw_gap]) cube([R_in + 1 - 24, 6, 5]);
 }
 
 module body() {

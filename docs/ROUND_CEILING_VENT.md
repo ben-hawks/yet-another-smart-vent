@@ -61,14 +61,17 @@ on edge without supports. STLs are in `cad/stl/round6/`.
 
 ## Assembly
 
-1. Fit the limit switch under its pad (above slat 0's +Y edge) so slat 0
-   presses it only when fully closed. Run its wires to the neck-base hole.
+1. Glue the limit switch under its pad (above slat 0's +Y edge), lever
+   down. With slat 0 in place, set the switch so it clicks just as the slat
+   reaches closed. Run its wires to the neck-base hole. If your switch
+   doesn't reach, change `sw_gap` in the `.scad` file.
 2. Put the link bar on the crank pins, then drop the louvers into the neck
    in order (slat0…slat5, −Y to +Y). Push the filament pins in through the
    wall into each hub.
-3. Trim a single-arm servo horn to about 10 mm, screw it into slat 4's end
-   pocket, then slide the servo through the bracket onto it and screw the
-   tabs down.
+3. Trim a single-arm servo horn to about 10 mm and screw it into slat 4's
+   end pocket. Power the servo once so it sits at its centre, hold the
+   louvers **half open (45°)**, then slide the servo through the bracket
+   onto the horn and screw the tabs down.
 4. Route the servo and switch wires through the neck-base hole and along
    the groove. Screw the vent to the ceiling with the three screws.
 5. Mount the pod nearby. Wire it the same as the floor vent's backpack (J2

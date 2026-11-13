@@ -4,6 +4,7 @@ Prices were looked up on 2026-11-01 and come from distributor search pages,
 so check them in the cart before ordering. "Check" means the price, stock or
 fit was not confirmed. **Qty** is for 10 vents, including spares where parts
 are cheap. A spreadsheet version is in [`bom-10-vents.csv`](bom-10-vents.csv).
+**For 20 vents, double every quantity.**
 
 ## Main parts
 
@@ -20,12 +21,13 @@ are cheap. A spreadsheet version is in [`bom-10-vents.csv`](bom-10-vents.csv).
 **Or skip this table and have JLCPCB assemble it.** Every SMD part has a
 checked LCSC number in
 [`hardware/xiao-backpack/fab/jlcpcb/`](../hardware/xiao-backpack/fab/jlcpcb)
-(BOM + CPL): 11 Basic parts and 3 Extended. You then only hand-solder the
+(BOM + CPL): 14 Basic lines and 3 Extended. You then only hand-solder the
 connectors and headers. See the board's README.
 
 | Ref | Part | Per vent | Qty (10) | Source | Part number | Unit price @10 |
 |---|---|---|---|---|---|---|
 | — | PCB, 48 × 19 mm, 2-layer, 1.6 mm | 1 | 10 | JLCPCB / PCBWay / OSH Park | Gerbers in `hardware/xiao-backpack/fab/gerbers` | check (typically a few dollars for 5–10) |
+| Q1 | AO3401A P-MOSFET, SOT-23 (reverse-polarity protection) | 1 | 12 | DigiKey / LCSC C15127 | Alpha & Omega AO3401A | ~$0.40 (check) |
 | U1 | TPS22917DBVR load switch | 1 | 10 | DigiKey | 296-50498-1-ND | $0.407 |
 | U2 | MT3608 boost converter | 1 | 12 | **LCSC** | C84817 | check (DigiKey doesn't stock it) |
 | L1 | 10 µH 4.6 A Isat 52 mΩ shielded, 6 × 6 mm | 1 | 10 | DigiKey | SRN6045TA-100MCT-ND (Bourns SRN6045TA-100M) | $0.408 |
@@ -33,6 +35,7 @@ connectors and headers. See the board's README.
 | C3, C4, C5 | 22 µF 10 V X5R 1206 | 3 | 30 | DigiKey | 1276-1287-1-ND (Samsung CL31A226KPHNNNE) | $0.283 (10), $0.188 (100) |
 | C1 | 1 µF 25 V X7R 0805 | 1 | 20 | DigiKey | 1276-1066-1-ND (CL21B105KAFNNNE) | $0.059 |
 | C6, C7 | 100 nF 50 V X7R 0805 | 2 | 30 | DigiKey | 1276-1003-1-ND (CL21B104KBCNNNC) | $0.045 |
+| C2 | 1 nF 50 V X7R 0805 (load switch slew rate) | 1 | 20 | DigiKey / LCSC C46653 | Samsung CL21B102KBCNNNC | ~$0.05 (check) |
 | R1, R4, R5 | 1 MΩ 1% 0805 | 3 | 50 | DigiKey | 311-1.00MCRCT-ND (Yageo RC0805FR-071ML) | $0.034 (10), $0.017 (100) |
 | R2 | 51 kΩ 1% 0805 | 1 | 20 | DigiKey | Yageo RC0805FR-0751KL | ~same as above (check) |
 | R3 | 6.8 kΩ 1% 0805 | 1 | 20 | DigiKey | Yageo RC0805FR-076K8L | ~same (check) |

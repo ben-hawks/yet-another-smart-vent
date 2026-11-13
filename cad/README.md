@@ -14,6 +14,9 @@ openscad -D 'part="body_left"' -o body_left.stl cad/smart_vent_2x12_battery.scad
 
 Parts: `body_left`, `body_right`, `louver_driven`, `louver_follower`, `link`,
 `lid`, `fit_test`. The STLs in `stl/` are exports of the default parameters.
+`asm_body_left`, `asm_body_right`, `asm_driven`, `asm_follower`, `asm_link`
+and `asm_servo` export one part in its assembled position at
+`-D angle=<0..90>`, for collision checks.
 **Re-export them after you change any measurement.**
 
 All fit-critical dimensions (boot size, tower depth, servo, heat-set
