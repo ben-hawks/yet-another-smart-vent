@@ -25,6 +25,7 @@ CONF_LIGHT_SLEEP = "light_sleep"
 CONF_MAX_CPU_FREQUENCY = "max_cpu_frequency"
 CONF_MIN_CPU_FREQUENCY = "min_cpu_frequency"
 CONF_IDLE_LOOP_INTERVAL = "idle_loop_interval"
+CONF_POWER_DOWN_CPU = "power_down_cpu"
 
 smart_vent_power_ns = cg.esphome_ns.namespace("smart_vent_power")
 SmartVentPower = smart_vent_power_ns.class_("SmartVentPower", cg.Component)
@@ -42,6 +43,10 @@ CONFIG_SCHEMA = cv.Schema(
             cv.Optional(
                 CONF_IDLE_LOOP_INTERVAL, default="250ms"
             ): cv.positive_time_period_milliseconds,
+            # Also power the CPU core down in light sleep (state is retained).
+            # Saves roughly another 100 uA on paper; off by default until it
+            # has been measured on a prototype.
+            cv.Optional(CONF_POWER_DOWN_CPU, default=False): cv.boolean,
         }
     ).extend(cv.COMPONENT_SCHEMA)
 
@@ -60,3 +65,5 @@ async def to_code(config):
         add_idf_sdkconfig_option("CONFIG_FREERTOS_USE_TICKLESS_IDLE", True)
         # Allow the 802.15.4 (Thread) radio to sleep together with the CPU.
         add_idf_sdkconfig_option("CONFIG_IEEE802154_SLEEP_ENABLE", True)
+        if config[CONF_POWER_DOWN_CPU]:
+            add_idf_sdkconfig_option("CONFIG_PM_POWER_DOWN_CPU_IN_LIGHT_SLEEP", True)

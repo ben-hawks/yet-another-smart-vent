@@ -2,12 +2,12 @@
 #
 # Hardware this package expects (see docs/BATTERY_THREAD.md):
 #   - Seeed XIAO ESP32-C6, powered from a 1S Li-ion cell on its BAT pads
-#   - 5V regulator with a true-shutdown EN pin feeding the servo
-#     (EN driven by ${servo_power_pin}; the limit switch is also fed from it)
+#   - Backpack board (hardware/xiao-backpack): a load switch + 5 V boost
+#     feeding the servo, switched by ${servo_power_pin}; the limit switch is
+#     fed from the same pin
 #   - Analog-feedback servo (Feetech FT90M-FB: 280 deg, metal gear, rated
-#     -15..70 C); its feedback can reach 4.45 V, so it goes through a
-#     10k/20k divider
-#     feedback wire through 1k (100k pull-down) -> ${servo_feedback_pin}
+#     -15..70 C). Its feedback can reach 4.45 V, so it goes through a
+#     10k/20k divider -> ${servo_feedback_pin}
 #   - Closed limit switch between ${servo_power_pin} and ${limit_switch_pin}
 #   - 1M/1M divider from VBAT -> ${battery_pin}
 #
@@ -19,6 +19,12 @@
 #     only while the servo is powered.
 #   - The servo, its feedback pot and the limit switch draw nothing unless
 #     a move is in progress.
+#
+# Fail-safes (all local, none needs Home Assistant). Each one OPENS the vent,
+# because a closed vent that nobody can command starves the furnace of air:
+#   - Home Assistant unreachable for ${failsafe_open_after_minutes} min
+#   - battery below ${low_battery_volts} V: open and stay open until recharged
+#   - bay hotter than ${overtemp_open_c} C: open and stay open until it cools
 
 substitutions:
   # --- Pins (XIAO ESP32-C6 labels in brackets) ---
@@ -47,6 +53,22 @@ substitutions:
   battery_update_interval: 30min
   # Fail-safe: open the vent if Home Assistant has been unreachable this long.
   failsafe_open_after_minutes: '30'
+  # Fail-safe: below this resting voltage (about 5% left) the vent opens and
+  # ignores close commands, so it can never die closed. Cleared by charging
+  # past low_battery_clear_volts, or by a reboot.
+  low_battery_volts: '3.45'
+  low_battery_clear_volts: '3.70'
+  # Fail-safe: chip temperature (a few degrees above the air in the bay) at
+  # which the vent opens and stays open. Normal gas-furnace supply air is
+  # 37-54 C; past ~60 C the furnace is short of airflow and the cell is
+  # outside its rating.
+  overtemp_open_c: '66'
+  overtemp_clear_c: '55'
+  # A move that ends this far (0..1) from its target is reported as blocked.
+  blocked_tolerance: '0.15'
+  # 'true' = use an antenna on the XIAO's U.FL connector instead of the
+  # on-board ceramic one (worth trying if a metal boot blocks the signal).
+  external_antenna: 'false'
 
 esphome:
   name: ${name}
@@ -58,9 +80,10 @@ esphome:
         # XIAO ESP32-C6 RF switch: GPIO3 low enables it, GPIO14 low selects
         # the on-board ceramic antenna (high = U.FL connector).
         - output.turn_off: rf_switch_enable
-        - output.turn_off: rf_antenna_select
+        - lambda: 'id(rf_antenna_select).set_state(${external_antenna});'
     - priority: -100
       then:
+        - component.update: battery_voltage
         - if:
             condition:
               lambda: 'return id(calibrated);'
@@ -129,6 +152,22 @@ globals:
   - id: minutes_without_api
     type: int
     initial_value: '0'
+  # Not restored: a reboot (cell swap) re-evaluates both from fresh readings.
+  - id: low_battery_lockout
+    type: bool
+    initial_value: 'false'
+  - id: low_battery_count
+    type: int
+    initial_value: '0'
+  - id: overtemp_lockout
+    type: bool
+    initial_value: 'false'
+  - id: move_blocked
+    type: bool
+    initial_value: 'false'
+  - id: maintenance_active
+    type: bool
+    initial_value: 'false'
 
 output:
   - platform: ledc
@@ -160,13 +199,23 @@ switch:
     optimistic: true
     restore_mode: ALWAYS_OFF
     turn_on_action:
-      - openthread.set_poll_period: 0s
-      - lambda: 'id(power_mgr).begin_activity();'
-      - delay: 15min
-      - switch.turn_off: maintenance_mode
+      - if:
+          condition:
+            lambda: 'return !id(maintenance_active);'
+          then:
+            - lambda: 'id(maintenance_active) = true;'
+            - openthread.set_poll_period: 0s
+            - lambda: 'id(power_mgr).begin_activity();'
+      - script.execute: maintenance_timeout   # restarts the 15 minutes
     turn_off_action:
-      - openthread.set_poll_period: ${thread_poll_period}
-      - lambda: 'id(power_mgr).end_activity();'
+      - script.stop: maintenance_timeout
+      - if:
+          condition:
+            lambda: 'return id(maintenance_active);'
+          then:
+            - lambda: 'id(maintenance_active) = false;'
+            - openthread.set_poll_period: ${thread_poll_period}
+            - lambda: 'id(power_mgr).end_activity();'
 
 servo:
   - id: vent_servo
@@ -184,6 +233,27 @@ binary_sensor:
       mode:
         input: true
         pulldown: true
+
+  - platform: template
+    name: Battery Lockout
+    icon: mdi:battery-alert
+    device_class: problem
+    entity_category: diagnostic
+    lambda: 'return id(low_battery_lockout);'
+
+  - platform: template
+    name: Overheated
+    device_class: heat
+    entity_category: diagnostic
+    lambda: 'return id(overtemp_lockout);'
+
+  # The last move ended away from its target (something is in the louvers,
+  # the linkage has come apart, or the servo has failed).
+  - platform: template
+    name: Blocked
+    device_class: problem
+    entity_category: diagnostic
+    lambda: 'return id(move_blocked);'
 
 sensor:
   - platform: adc
@@ -207,6 +277,31 @@ sensor:
       - multiply: 2.0  # 1M/1M divider
     on_value:
       - component.update: battery_level
+      # Two low readings in a row (ignores one taken during a servo move).
+      - lambda: |-
+          if (x < ${low_battery_volts}) {
+            if (id(low_battery_count) < 2) id(low_battery_count)++;
+          } else {
+            id(low_battery_count) = 0;
+            if (x > ${low_battery_clear_volts}) id(low_battery_lockout) = false;
+          }
+      - if:
+          condition:
+            lambda: 'return id(low_battery_count) == 1;'
+          then:
+            - delay: 2min
+            - component.update: battery_voltage
+      - if:
+          condition:
+            lambda: 'return id(low_battery_count) >= 2 && !id(low_battery_lockout);'
+          then:
+            - logger.log:
+                level: WARN
+                format: "Battery low: opening the vent and holding it open"
+            - lambda: 'id(low_battery_lockout) = true;'
+            - script.execute:
+                id: move_to
+                target: 1.0
 
   # Chip temperature: the closest thing we have to a battery temperature
   # (the cell shares the closed tower with the board). Gas furnace supply
@@ -214,7 +309,20 @@ sensor:
   - platform: internal_temperature
     name: Bay Temperature
     entity_category: diagnostic
-    update_interval: 10min
+    update_interval: 5min
+    on_value:
+      - lambda: 'if (x < ${overtemp_clear_c}) id(overtemp_lockout) = false;'
+      - if:
+          condition:
+            lambda: 'return x > ${overtemp_open_c} && !id(overtemp_lockout);'
+          then:
+            - logger.log:
+                level: WARN
+                format: "Bay overheated: opening the vent and holding it open"
+            - lambda: 'id(overtemp_lockout) = true;'
+            - script.execute:
+                id: move_to
+                target: 1.0
 
   - platform: template
     id: battery_level
@@ -288,6 +396,12 @@ interval:
                       target: 1.0
 
 script:
+  - id: maintenance_timeout
+    mode: restart
+    then:
+      - delay: 15min
+      - switch.turn_off: maintenance_mode
+
   # Power the servo rail and keep the CPU awake. Safe to call when on.
   - id: power_up
     then:
@@ -337,7 +451,10 @@ script:
                 level: WARN
                 format: "Vent not calibrated yet, ignoring move"
             - script.stop: move_to
+      # A lockout (low battery / overheated) turns every move into "open".
       - lambda: |-
+          if (id(low_battery_lockout) || id(overtemp_lockout)) target = 1.0f;
+          target = clamp(target, 0.0f, 1.0f);
           id(vent).current_operation = target > id(vent).position
               ? COVER_OPERATION_OPENING : COVER_OPERATION_CLOSING;
           id(vent).publish_state();
@@ -346,11 +463,15 @@ script:
       - servo.write:
           id: vent_servo
           level: !lambda |-
-            return id(closed_level) + clamp(target, 0.0f, 1.0f) * (id(open_level) - id(closed_level));
+            return id(closed_level) + target * (id(open_level) - id(closed_level));
       - delay: ${servo_transition_length}
       - delay: ${servo_settle_time}
       - script.execute: publish_feedback_position
       - script.wait: publish_feedback_position
+      - lambda: |-
+          id(move_blocked) = fabsf(id(vent).position - target) > ${blocked_tolerance};
+          if (id(move_blocked))
+            ESP_LOGW("vent", "Move blocked: wanted %.2f, feedback says %.2f", target, id(vent).position);
       - script.execute: power_down
 
   # Wake the servo without moving it and work out where the louvers are, so
@@ -388,6 +509,31 @@ script:
           id(sweep_level) = 0.0f;
           id(vent_servo)->write(0.0f);
       - delay: 600ms
+      # If the switch is already pressed, back off toward open until it
+      # releases, so "closed" is always found approaching from the open side
+      # (and a shorted switch is caught instead of trusted).
+      - while:
+          condition:
+            lambda: |-
+              return id(closed_limit_switch).state && fabsf(id(sweep_level)) < 0.5f;
+          then:
+            - lambda: |-
+                id(sweep_level) += 0.01f * ${invert_value};
+                id(vent_servo)->write(id(sweep_level));
+            - delay: 60ms
+      - if:
+          condition:
+            binary_sensor.is_on: closed_limit_switch
+          then:
+            - logger.log:
+                level: ERROR
+                format: "Calibration failed: limit switch stuck closed (wiring short?)"
+            - lambda: |-
+                id(vent_servo)->write(0.0f);
+                id(vent_servo)->set_transition_length(${servo_transition_length_ms});
+            - delay: 600ms
+            - script.execute: power_down
+            - script.stop: calibrate
       - while:
           condition:
             lambda: |-
@@ -404,7 +550,11 @@ script:
             - logger.log:
                 level: ERROR
                 format: "Calibration failed: limit switch never closed"
-            - lambda: 'id(vent_servo)->set_transition_length(${servo_transition_length_ms});'
+            # Park mid-travel (partly open) instead of at the end stop.
+            - lambda: |-
+                id(vent_servo)->write(0.0f);
+                id(vent_servo)->set_transition_length(${servo_transition_length_ms});
+            - delay: 600ms
             - script.execute: power_down
             - script.stop: calibrate
       - delay: 300ms
@@ -419,6 +569,7 @@ script:
       - lambda: |-
           id(open_feedback) = id(servo_feedback).state;
           id(calibrated) = true;
+          id(move_blocked) = false;
           id(vent_servo)->set_transition_length(${servo_transition_length_ms});
           ESP_LOGI("vent", "Calibrated: closed=%.3f (fb %.3f V) open=%.3f (fb %.3f V)",
                    id(closed_level), id(closed_feedback), id(open_level), id(open_feedback));
