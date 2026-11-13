@@ -16,6 +16,7 @@
 part = "assembly";
 explode = 0;          // assembly view only: spread the parts apart (mm)
 show_open = false;    // assembly view only: louvers open instead of closed
+angle = 0;            // assembly view only: louver angle in degrees (0 closed .. 90 open)
 
 /* [Boot / floor fit - MEASURE YOUR VENT] */
 body_len   = 296;     // outer length of the part that drops into the boot
@@ -29,8 +30,15 @@ flange_len = 330;
 flange_w   = 84;
 flange_t   = 6;
 flange_r   = 6;       // corner radius
-slot_w     = 4;
+// Grille: free area matters. Twenty of these in a house add up, and a gas
+// furnace needs its airflow. 5 mm slots on a 7 mm pitch give about 10.3 sq in
+// (the first draft had 8.2). The centre spine halves each bar's span, so the
+// 2 mm bars survive being stepped on.
+slot_w     = 5;
 slot_pitch = 7;
+bar_drop   = 2;       // the bars continue this far below the floor line (stiffer underfoot)
+spine_w    = 2.4;     // lengthwise rib under the middle of the grille
+spine_drop = 6;       // how far the spine hangs below the floor line
 
 /* [Structure] */
 wall       = 2;
@@ -45,7 +53,13 @@ louver_axis_y  = 11.8;   // +/- from centre
 louver_half_chord = 11;
 louver_plate_t = 4;      // plate sits below the axis (flat side down to print)
 end_block_len  = 9;      // must exceed insert_depth
-crank_r        = 8;      // crank pin radius from the louver axis
+crank_r        = 9;      // crank pin radius from the louver axis
+// The cranks hang DOWN and swing 45 deg either side of straight down.
+// A parallelogram linkage loses control of the follower when the cranks
+// line up with the link (its dead point); the first draft was fully open
+// exactly there. 135 = down and toward -Y when closed, 225 when open.
+crank_phase    = 135;
+link_w         = 5;      // link bar width
 pin_d          = 3;
 louver_end_gap = 0.5;    // clearance at each end of a louver
 
@@ -65,6 +79,15 @@ servo_above_tab = 6.6;    // case height above the mounting tabs
 servo_spline_above_tab = 8.7; // top of the output spline above the tabs (FT90M sheet: 25.5 - 16.8)
 servo_below_tab = 16.8;   // case depth below the tabs (FT90M sheet)
 
+/* [Limit switch - Panasonic ESE-11HS2 (8.6 x 4.5 x 3.6 mm): CHECK THE LEVER ON YOURS] */
+// The switch is glued under a pad on the side wall, above the driven
+// louver's outer edge at the servo end. That edge rises about 0.2 mm per
+// degree as the vent closes, so the switch position sets "closed" to
+// within a degree or two. The pad's underside is sw_gap above the edge
+// when closed: switch body height + the lever's travel to its ON point.
+sw_gap   = 5.0;
+sw_pad_w = 4.2;      // how far the pad stands out from the side wall
+
 /* [Electronics] */
 cell_holder = [21, 21, 78];   // single 18650 holder, standing upright
 xiao = [17.8, 21, 1.2];       // XIAO ESP32-C6: width, length, PCB thickness
@@ -74,6 +97,8 @@ $fn = 48;
 assert(bay_depth + 2.5 + 5 <= boot_depth,
        str("Tower (", bay_depth + 2.5, " mm incl. lid) needs 5 mm clearance in a ", boot_depth, " mm boot"));
 assert(end_block_len >= insert_depth + 1, "Louver end blocks are too short for the inserts");
+assert(louver_axis_y + crank_r * sin(45) + 3 < body_w / 2 - wall - 1, "crank tips would hit the side walls");
+assert(crank_r - link_w / 2 >= 6.4, "link bar would rub the servo's output boss (about 12 mm across)");
 eps = 0.01;
 
 // ---------------------------------------------------------------- derived
@@ -91,6 +116,10 @@ louver_x1 = x1 - wall - louver_end_gap;
 louver_len = louver_x1 - louver_x0;
 grille_x0 = part_x + 3;
 grille_x1 = x1 - wall - 3;
+end_block_h = 8;
+sw_pad_z = louver_axis_z + end_block_h / 2 + sw_gap;   // underside of the limit switch pad
+function crank_y(a) = -crank_r * sin(crank_phase + a);
+function crank_z(a) =  crank_r * cos(crank_phase + a);
 
 // ---------------------------------------------------------------- helpers
 module rrect(size, r) {
@@ -113,16 +142,22 @@ module m3_countersunk(len = 20) {
 // ---------------------------------------------------------------- flange
 module flange() {
   difference() {
-    translate([0, 0, 0]) hull() {
-      translate([0, 0, 0]) linear_extrude(flange_t - 1.5) rrect([flange_len, flange_w], flange_r);
-      translate([0, 0, flange_t - 1.5]) linear_extrude(1.5) rrect([flange_len - 3, flange_w - 3], flange_r - 1.5);
+    union() {
+      hull() {
+        linear_extrude(flange_t - 1.5) rrect([flange_len, flange_w], flange_r);
+        translate([0, 0, flange_t - 1.5]) linear_extrude(1.5) rrect([flange_len - 3, flange_w - 3], flange_r - 1.5);
+      }
+      // the grille bars continue below the floor line, inside the body
+      translate([part_x, -inner_w - eps, -bar_drop]) cube([x1 - wall - part_x, 2 * inner_w + 2 * eps, bar_drop + eps]);
     }
     // grille slots over the louvers (solid band at the centre split)
     for (x = [grille_x0 + slot_w / 2 : slot_pitch : grille_x1 - slot_w / 2])
       if (abs(x) > 12)
-        translate([x, 0, -1]) linear_extrude(flange_t + 2)
-          hull() for (s = [-1, 1]) translate([0, s * (inner_w - 3 - slot_w / 2)]) circle(d = slot_w);
+        translate([x, 0, -bar_drop - 1]) linear_extrude(flange_t + bar_drop + 2)
+          hull() for (s = [-1, 1]) translate([0, s * (inner_w - 1 - slot_w / 2)]) circle(d = slot_w);
   }
+  // centre spine: ties every bar together and halves its span
+  translate([grille_x0 - 3, -spine_w / 2, -spine_drop]) cube([grille_x1 - grille_x0 + 6, spine_w, spine_drop + flange_t - 0.6]);
 }
 
 // ---------------------------------------------------------------- body
@@ -139,8 +174,8 @@ module body_shell() {
   }
   // lid screw bosses
   for (p = lid_screws()) translate([p[0] - 4, p[1] - 4, -bay_depth]) cube([8, 8, 10]);
-  // limit switch pad on the louver side of the partition, above the link
-  translate([part_x - eps, -5, -6]) cube([3.5, 10, 6]);
+  // limit switch pad on the side wall, above the driven louver's outer edge
+  translate([part_x - eps, -inner_w - eps, sw_pad_z]) cube([louver_x0 + end_block_len - part_x, sw_pad_w, -sw_pad_z]);
 }
 
 function lid_screws() = [[x0 + wall + 4.5, inner_w - 4], [tab_x - 4.5, -(inner_w - 4)]];
@@ -157,8 +192,8 @@ module body_cuts() {
   translate([tab_x, louver_axis_y, louver_axis_z]) rotate([0, -90, 0]) m3_countersunk(partition_t + 2);
   // far-end axles: flat-head M3 from outside the end wall
   for (s = [-1, 1]) translate([x1, s * louver_axis_y, louver_axis_z]) rotate([0, 90, 0]) m3_countersunk(wall + 2);
-  // wire hole for the limit switch
-  translate([tab_x - 1, 7, -4]) rotate([0, 90, 0]) cylinder(d = 3.5, h = partition_t + 2);
+  // wire hole for the limit switch (beside its pad, above the servo tab)
+  translate([tab_x - 1, -inner_w + sw_pad_w + 2.6, -5]) rotate([0, 90, 0]) cylinder(d = 3.5, h = partition_t + 2);
   // lid inserts
   for (p = lid_screws()) translate([p[0], p[1], -bay_depth]) rotate([180, 0, 0]) insert_hole();
   // zip-tie slots in the end wall for the cell holder
@@ -236,10 +271,10 @@ module louver_section_2d() {
   translate([0, -louver_plate_t / 2]) square([2 * louver_half_chord, louver_plate_t], center = true);
 }
 module louver_end_block_2d() {
-  square([2 * louver_half_chord, 8], center = true);
+  square([2 * louver_half_chord, end_block_h], center = true);
 }
 module crank_2d() {
-  hull() { circle(d = 8); translate([0, crank_r]) circle(d = 6); }
+  hull() { circle(d = 8); translate([crank_y(0), crank_z(0)]) circle(d = 6); }
 }
 
 module louver(driven = false) {
@@ -252,7 +287,7 @@ module louver(driven = false) {
         translate([x, 0, 0]) rotate([90, 0, 90]) linear_extrude(end_block_len) louver_end_block_2d();
       // crank fin + pin at the servo end
       rotate([90, 0, 90]) linear_extrude(end_block_len) crank_2d();
-      translate([eps, 0, crank_r]) rotate([0, -90, 0]) cylinder(d = pin_d, h = link_t + 0.5 + eps);
+      translate([eps, crank_y(0), crank_z(0)]) rotate([0, -90, 0]) cylinder(d = pin_d, h = link_t + 0.5 + eps);
       // stiffening ribs on top of the plate
       for (y = [-6, 6]) translate([0, y - 0.8, 0]) cube([louver_len, 1.6, 2]);
     }
@@ -274,7 +309,7 @@ module louver(driven = false) {
 link_len = 2 * louver_axis_y;
 module link() {
   difference() {
-    linear_extrude(link_t) hull() for (x = [0, link_len]) translate([x, 0]) circle(d = 6);
+    linear_extrude(link_t) hull() for (x = [0, link_len]) translate([x, 0]) circle(d = link_w);
     for (x = [0, link_len]) translate([x, 0, -1]) cylinder(d = pin_d + 0.3, h = link_t + 2);
   }
 }
@@ -333,8 +368,9 @@ module fit_test() {
 }
 
 // ---------------------------------------------------------------- assembly
+function vent_angle() = show_open ? 90 : angle;
 module placed_louver(side, driven) {
-  a = show_open ? 90 : 0;
+  a = vent_angle();
   translate([louver_x0, side * louver_axis_y, louver_axis_z - explode * 0.6])
     rotate([a, 0, 0]) louver(driven);
 }
@@ -347,8 +383,8 @@ module servo_ghost() {
 }
 
 module link_in_assembly() {
-  a = show_open ? 90 : 0;
-  translate([link_x1, -louver_axis_y - sin(a) * crank_r, louver_axis_z + cos(a) * crank_r])
+  a = vent_angle();
+  translate([link_x1, -louver_axis_y + crank_y(a), louver_axis_z + crank_z(a)])
     multmatrix([[0, 0, 1, 0], [1, 0, 0, 0], [0, 1, 0, 0]]) link();   // local x->Y, y->Z, z->X
 }
 
@@ -370,9 +406,14 @@ if (part == "assembly") {
 } else if (part == "fit_test") {
   mirror([0, 0, 1]) translate([0, 0, -flange_t]) fit_test();
 }
+// single parts in their assembled position, for collision checks (use with -D angle=...)
+else if (part == "asm_body") { body_left(); body_right(); }
+else if (part == "asm_driven") placed_louver(-1, true);
+else if (part == "asm_follower") placed_louver(1, false);
+else if (part == "asm_link") link_in_assembly();
+else if (part == "asm_servo") servo_ghost();
 
 module assembly_clean() {
-  a = show_open ? 90 : 0;
   color("SteelBlue") translate([-explode / 2, 0, 0]) body_left();
   color("LightSteelBlue") translate([explode / 2, 0, 0]) body_right();
   color("Orange") placed_louver(-1, true);
@@ -383,3 +424,5 @@ module assembly_clean() {
   color("Purple", 0.6) backpack_ghost();
   color("Green", 0.6) translate([x0 + wall + liner_t, -cell_holder[0] / 2, -bay_depth + 2]) cube(cell_holder);
 }
+if (part == "asm_body_left") body_left();
+if (part == "asm_body_right") body_right();
