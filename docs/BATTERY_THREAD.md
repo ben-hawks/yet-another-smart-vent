@@ -159,7 +159,7 @@ Pre-exported STLs are in `cad/stl/`, already in print orientation.
 
 | Part | Qty | Orientation / notes |
 |---|---|---|
-| `body_left` | 1 | Grille face down. Includes the electronics tower. Supports needed for the partition's servo opening and under the limit switch pad |
+| `body_left` | 1 | Grille face down. Includes the electronics tower. Supports needed only for the partition's servo opening |
 | `body_right` | 1 | Grille face down |
 | `louver_driven` | 1 | Flat side down. About 244 mm long, so print it diagonally on a bed smaller than 250 mm |
 | `louver_follower` | 1 | Same as above |

@@ -168,6 +168,10 @@ globals:
   - id: maintenance_active
     type: bool
     initial_value: 'false'
+  # Where the current move is going (0..1), after any lockout override.
+  - id: move_target
+    type: float
+    initial_value: '1'
 
 output:
   - platform: ledc
@@ -452,10 +456,23 @@ script:
                 format: "Vent not calibrated yet, ignoring move"
             - script.stop: move_to
       # A lockout (low battery / overheated) turns every move into "open".
+      # (Script parameters are copied into each action, so the adjusted
+      # target lives in a global.)
       - lambda: |-
-          if (id(low_battery_lockout) || id(overtemp_lockout)) target = 1.0f;
-          target = clamp(target, 0.0f, 1.0f);
-          id(vent).current_operation = target > id(vent).position
+          id(move_target) = (id(low_battery_lockout) || id(overtemp_lockout))
+              ? 1.0f : clamp(target, 0.0f, 1.0f);
+      # Already there: don't wake the servo. Home Assistant repeats commands,
+      # and during a lockout it may keep asking for "closed".
+      - if:
+          condition:
+            lambda: 'return !id(move_blocked) && fabsf(id(move_target) - id(vent).position) < 0.03f;'
+          then:
+            - lambda: |-
+                id(vent).current_operation = COVER_OPERATION_IDLE;
+                id(vent).publish_state();
+            - script.stop: move_to
+      - lambda: |-
+          id(vent).current_operation = id(move_target) > id(vent).position
               ? COVER_OPERATION_OPENING : COVER_OPERATION_CLOSING;
           id(vent).publish_state();
       - script.execute: power_up
@@ -463,15 +480,15 @@ script:
       - servo.write:
           id: vent_servo
           level: !lambda |-
-            return id(closed_level) + target * (id(open_level) - id(closed_level));
+            return id(closed_level) + id(move_target) * (id(open_level) - id(closed_level));
       - delay: ${servo_transition_length}
       - delay: ${servo_settle_time}
       - script.execute: publish_feedback_position
       - script.wait: publish_feedback_position
       - lambda: |-
-          id(move_blocked) = fabsf(id(vent).position - target) > ${blocked_tolerance};
+          id(move_blocked) = fabsf(id(vent).position - id(move_target)) > ${blocked_tolerance};
           if (id(move_blocked))
-            ESP_LOGW("vent", "Move blocked: wanted %.2f, feedback says %.2f", target, id(vent).position);
+            ESP_LOGW("vent", "Move blocked: wanted %.2f, feedback says %.2f", id(move_target), id(vent).position);
       - script.execute: power_down
 
   # Wake the servo without moving it and work out where the louvers are, so
