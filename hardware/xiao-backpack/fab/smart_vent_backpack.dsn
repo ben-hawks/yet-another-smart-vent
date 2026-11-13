@@ -31,14 +31,11 @@
             168.53 -444.43  292.893 -292.893  444.43 -168.53  617.317 -76.12
             804.91 -19.215  1000 0  47000 0  47195.1 -19.215)
     )
-    (keepout "window_margin" (polygon signal 0  29700 -13350  35400 -13350  35400 -5650  29700 -5650
-            29700 -13350))
+    (keepout "window_margin" (polygon signal 0  29700 -5650  35400 -5650  35400 -13350  29700 -13350  29700 -5650))
     (keepout "edge_margin_top" (polygon signal 0  0 0  48000 0  48000 -350  0 -350  0 0))
-    (keepout "edge_margin_bottom" (polygon signal 0  0 -18650  48000 -18650  48000 -19000  0 -19000
-            0 -18650))
+    (keepout "edge_margin_bottom" (polygon signal 0  0 -18650  48000 -18650  48000 -19000  0 -19000  0 -18650))
     (keepout "edge_margin_left" (polygon signal 0  0 0  350 0  350 -19000  0 -19000  0 0))
-    (keepout "edge_margin_right" (polygon signal 0  47650 0  48000 0  48000 -19000  47650 -19000
-            47650 0))
+    (keepout "edge_margin_right" (polygon signal 0  47650 0  48000 0  48000 -19000  47650 -19000  47650 0))
     (via "Via[0-1]_600:300_um" "Via[0-1]_800:400_um")
     (rule
       (width 250)

@@ -5,18 +5,21 @@ circuitry. The XIAO ESP32-C6 plugs onto it with its two 1×7 headers.
 
 ![Routed board, top and bottom](fab/routed.png)
 
-**Status: v0.2 is placed and being re-routed** (the notes below describe v0.1's routing until it is). It was autorouted with
-Freerouting 2.5.0 from `fab/smart_vent_backpack.dsn`, and the result is in
+**Status: v0.2, routed and checked, not yet built.** It was autorouted with
+Freerouting from `fab/smart_vent_backpack.dsn`; the result is in
 `fab/smart_vent_backpack.ses`. After importing:
 - every net is connected (0 unconnected pads)
-- KiCad 7 DRC reports 0 violations, against fab rules of 0.3 mm to the edge,
-  0.15 mm clearance and 0.12 mm minimum track
+- KiCad DRC reports 0 violations (KiCad 7 here, and KiCad 10 on a second
+  machine), against fab rules of 0.3 mm to the edge, 0.15 mm clearance and
+  0.13 mm minimum track
 - the PCB's netlist matches the schematic's
+- an independent review with KiCad 10 found no blockers (see
+  [Design review notes](#design-review-notes-v02))
 
-Power nets (GND, VBAT, VSW, SW, V5) are 0.6 mm, narrowing to 0.36–0.45 mm
-only at pads. Ground is poured on both layers. Order with
-[`fab/gerbers.zip`](fab/gerbers.zip) (2 layers, 1.6 mm, 1 oz, any colour).
-This is an untested first revision, so order a small batch.
+Power nets (VBAT_RAW, VBAT, GND, VSW, SW, V5) are 0.6 mm, narrowing to
+0.45 mm only for a few millimetres at pads. Ground is poured on both
+layers. Order with [`fab/gerbers.zip`](fab/gerbers.zip) (2 layers, 1.6 mm,
+1 oz, any colour; JLCPCB's standard tier is enough).
 
 ## Circuit
 
@@ -81,6 +84,18 @@ Upload these three to JLCPCB with **PCB Assembly** turned on (top side, Economic
   reversed: the XIAO's charger would turn Q1 on.
 - The servo header's pin labels (G, 5V, S, FB) are on the **back**
   silkscreen; Q1 and C2 took their place on the front.
+- **Independent KiCad 10 review (2026-11-13):** pinouts of U1, U2, Q1 and
+  D1, the XIAO pin map, all three dividers and the five LCSC numbers for
+  the active parts and inductor were re-checked against datasheets and
+  distributor listings; no errors. KiCad's ERC flags U1's QOD pin tied to
+  VOUT and an analyzer flags U2's EN tied to IN; both are the
+  manufacturers' documented connections. Its three layout points were
+  checked here: one 0.125 mm neck on LIMIT is now 0.13 mm (JLCPCB's
+  standard minimum is 0.127 mm); the "0.1 mm from the edge" on J2/J3 is
+  their courtyard, and the nearest pad copper to any edge is 0.68 mm; the
+  0.45 mm necks on the battery nets total under 8 mm.
+- The router is now given a 0.35 mm keep-out around the battery window and
+  along the board edges, so it can't hug them (it did in v0.1).
 - **Checked against datasheets:** the TPS22917 and MT3608 pinouts, the
   MT3608 FB voltage (0.6 V), EN tied to the input (allowed), and the input
   range (2–24 V). GPIO0/1 are ADC1 channels 0/1. None of the pins used
@@ -134,5 +149,7 @@ nets, DRC).
 The router's output can also be imported straight into KiCad (**File →
 Import → Specctra Session**) on the generated `.kicad_pcb`.
 
-Requires KiCad 7 or later. Set `KICAD7_FOOTPRINT_DIR` if KiCad's global
+Requires KiCad 7 or 8. On KiCad 10 the script stops: the Bourns inductor
+footprint it adapts has changed and the `Q_PMOS_GSD` symbol was renamed.
+The generated project files open fine in KiCad 10. Set `KICAD7_FOOTPRINT_DIR` if KiCad's global
 libraries aren't configured.

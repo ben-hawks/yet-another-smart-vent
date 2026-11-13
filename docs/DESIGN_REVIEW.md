@@ -106,8 +106,14 @@ but this work is on `claude/wonderful-gauss-hco8hj`. Merge it, or set
   saturation current.
 - The feedback divider (10k/20k) keeps the ADC pin at or under 3.4 V even
   if the servo's feedback wire reaches the full 5.1 V.
-- Routing and an independent KiCad 10 review: see the board's
-  [README](../hardware/xiao-backpack/README.md).
+- v0.2 is routed: 0 DRC violations and 0 unconnected pads in both KiCad 7
+  and KiCad 10, and the netlist matches the schematic.
+- An independent review on a second machine (KiCad 10) re-checked every
+  pinout, divider and LCSC part number and found no blockers. Its layout
+  points are answered in the board's
+  [README](../hardware/xiao-backpack/README.md#design-review-notes-v02).
+- Not done: circuit simulation and an EMC pass on the boost converter. The
+  boost only runs for a few seconds per move, inside a metal duct.
 
 ## Printed parts and mechanics
 

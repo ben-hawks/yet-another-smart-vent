@@ -139,6 +139,7 @@ NET_CLASSES = {
 }
 DEFAULT_TRACK, DEFAULT_CLEARANCE = 0.25, 0.2
 VIA_D, VIA_DRILL = 0.6, 0.3
+MIN_TRACK = 0.13   # JLCPCB's standard tier needs 0.127 mm; the router necks to 0.125 into one pad
 
 
 def uid():
@@ -367,9 +368,9 @@ def build_pcb(freerouting_jar=None, ses_in=None):
     ds = board.GetDesignSettings()
     ds.SetCopperLayerCount(2)
     # Fab-friendly limits (JLCPCB/OSH Park class): 0.3 mm copper to board edge,
-    # 0.12 mm minimum track (the router necks down into small pads).
+    # MIN_TRACK minimum track (the router necks down into small pads).
     ds.m_CopperEdgeClearance = pcbnew.FromMM(0.3)
-    ds.m_TrackMinWidth = pcbnew.FromMM(0.12)
+    ds.m_TrackMinWidth = pcbnew.FromMM(MIN_TRACK)
     ds.m_MinClearance = pcbnew.FromMM(0.15)
     ns = ds.m_NetSettings
     dflt = ns.m_DefaultNetClass
@@ -567,7 +568,28 @@ def assign_dsn_classes(dsn):
         text = text.replace(f"(class {cname}\n", f"(class {cname} {' '.join(mine)}\n", 1)
     keep = [n for n in nets if n not in moved]
     text = text[:m.start(1)] + " " + " ".join(keep) + "\n      " + text[m.end(1):]
-    dsn.write_text(text)
+    dsn.write_text(add_dsn_keepouts(text))
+
+
+def add_dsn_keepouts(text, margin=0.35):
+    """KiCad exports the battery-window keepout flush with the cut-out, and
+    the router knows nothing of KiCad's copper-to-edge rule. Without a margin
+    it runs tracks 0.2 mm from the window. Grow the window keepout and add
+    strips along the board edges (DSN units are um, y negative)."""
+    um = lambda v: f"{v * 1000:g}"
+    def rect(name, xa, ya, xb, yb):
+        pts = [(xa, ya), (xb, ya), (xb, yb), (xa, yb), (xa, ya)]
+        return (f'    (keepout "{name}" (polygon signal 0  '
+                + "  ".join(f"{um(x)} {um(-y)}" for x, y in pts) + "))\n")
+    m = re.search(r'    \(keepout ""\s*\(polygon signal 0[^)]*\)\)\n', text)
+    if not m:
+        sys.exit("DSN: window keepout not found")
+    x0, y0, x1, y1 = WINDOW
+    W, H, g = BOARD_W, BOARD_H, margin
+    new = (rect("window_margin", x0 - g, y0 - g, x1 + g, y1 + g)
+           + rect("edge_margin_top", 0, 0, W, g) + rect("edge_margin_bottom", 0, H - g, W, H)
+           + rect("edge_margin_left", 0, 0, g, H) + rect("edge_margin_right", W - g, 0, W, H))
+    return text[:m.start()] + new + text[m.end():]
 
 
 def drop_gnd_tracks_near_window(board, clearance=0.3):
@@ -639,7 +661,7 @@ def import_ses(board, ses_path, nets):
                 t = pcbnew.PCB_TRACK(board)
                 t.SetStart(a)
                 t.SetEnd(b)
-                t.SetWidth(pcbnew.FromMM(width))
+                t.SetWidth(pcbnew.FromMM(max(width, MIN_TRACK)))   # the router necks down into pads
                 t.SetLayer(layers[layer])
                 t.SetNet(ni)
                 board.Add(t)
