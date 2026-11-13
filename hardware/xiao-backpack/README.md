@@ -5,7 +5,7 @@ circuitry. The XIAO ESP32-C6 plugs onto it with its two 1×7 headers.
 
 ![Routed board, top and bottom](fab/routed.png)
 
-**Status: routed, ready for a first prototype order.** It was autorouted with
+**Status: v0.2 is placed and being re-routed** (the notes below describe v0.1's routing until it is). It was autorouted with
 Freerouting 2.5.0 from `fab/smart_vent_backpack.dsn`, and the result is in
 `fab/smart_vent_backpack.ses`. After importing:
 - every net is connected (0 unconnected pads)
@@ -22,8 +22,8 @@ This is an untested first revision, so order a small batch.
 
 | Block | Parts | Notes |
 |---|---|---|
-| Battery in | J1 (JST-PH 2 mm), TP1/TP2 | TP1/TP2 are wire pads. Run short wires through the window to the XIAO's BAT+/BAT− pads, which charge the cell over USB-C |
-| Servo power switch | U1 TPS22917 load switch, C1, R1 (keeps it off); **C2 not fitted** | Cuts the cell off completely between moves (nanoamp leakage). Its ON pin is XIAO **D3** |
+| Battery in | J1 (JST-PH 2 mm), Q1 AO3401A, TP1/TP2 | Q1 blocks a cell fitted backwards and conducts both ways otherwise. TP1/TP2 are wire pads. Run short wires through the window to the XIAO's BAT+/BAT− pads, which charge the cell over USB-C |
+| Servo power switch | U1 TPS22917 load switch, C1, C2 (1 nF, CT to VIN: about 1.6 ms soft start), R1 (keeps it off) | Cuts the cell off completely between moves (nanoamp leakage). Its ON pin is XIAO **D3** |
 | 5 V boost | U2 MT3608, L1 10 µH, D1 SS34, C3–C5 22 µF, R2/R3 | Vout = 0.6 V × (1 + 51k/6.8k) = 5.1 V (both JLCPCB basic parts). Only powered while U1 is on |
 | Servo | J2: GND, +5V, SIG, FB | SIG from **D2** through R8 (330 Ω). FB through a 10k/20k divider (R6/R7, C7 filter) to **D1**: 5.1 V → 3.4 V. Feetech's sheet shows the FT90M-FB's feedback reaching **4.45 V**, so it must be divided |
 | Battery sense | R4/R5 1M/1M, C6 | To **D0**. Draws about 2 µA |
@@ -55,7 +55,7 @@ Upload these three to JLCPCB with **PCB Assembly** turned on (top side, Economic
 | [`fab/jlcpcb/bom_jlcpcb.csv`](fab/jlcpcb/bom_jlcpcb.csv) | Comment, Designator, Footprint, LCSC Part # |
 | [`fab/jlcpcb/cpl_jlcpcb.csv`](fab/jlcpcb/cpl_jlcpcb.csv) | Designator, Mid X, Mid Y, Layer, Rotation |
 
-- **What JLCPCB places:** all 21 SMD parts. 11 BOM lines are JLCPCB
+- **What JLCPCB places:** all 22 SMD parts. 14 BOM lines are JLCPCB
   **Basic** parts. 3 are **Extended**, which carries a feeder fee per order:
   TPS22917DBVR (C2681320), MT3608 (C84817) and SRN6045TA-100M (C2046332).
   Part numbers and stock were checked against JLCPCB's parts library on
@@ -69,13 +69,18 @@ Upload these three to JLCPCB with **PCB Assembly** turned on (top side, Economic
   cathode band of D1 sit on the marked pads** before confirming. Rotate any
   part that's off there; the files don't need regenerating.
 
-## Design review notes (v0.1)
+## Design review notes (v0.2)
 
-- **C2 is DNP (not fitted).** TI's datasheet (SLVSDW8B, Table 6-1 and §9)
-  says the CT slew capacitor goes from **CT to VIN**, but this board wires it
-  to GND. CT may float ("fastest timing"). That gives about a 120 µs turn-on
-  and a brief ~0.7 A inrush into C3, which is fine for the 2 A switch and the
-  10 A cell. Fix it properly in the next revision if a slower start is wanted.
+- **C2 now goes from CT to VIN and is fitted** (TI SLVSDW8B, Table 6-1).
+  v0.1 wired it to GND and left it off. With CT open the switch rises in
+  about 65 µs, which charges C3–C5 through L1 and D1 at roughly 2 A, close
+  to the TPS22917's 2.5 A pulse rating. With 1 nF it rises in about 1.6 ms
+  and the inrush is about 0.15 A.
+- **Q1 (AO3401A) is new:** drain to the cell, source to the board, gate to
+  GND. A reversed cell leaves it off. Don't plug in USB while a cell is
+  reversed: the XIAO's charger would turn Q1 on.
+- The servo header's pin labels (G, 5V, S, FB) are on the **back**
+  silkscreen; Q1 and C2 took their place on the front.
 - **Checked against datasheets:** the TPS22917 and MT3608 pinouts, the
   MT3608 FB voltage (0.6 V), EN tied to the input (allowed), and the input
   range (2–24 V). GPIO0/1 are ADC1 channels 0/1. None of the pins used
@@ -103,7 +108,7 @@ Everything is hand-solderable with a fine-tip iron, flux and tweezers:
 Suggested order:
 1. The low parts under the XIAO (R1, R4–R10, C6, C7). They're unreachable
    once the XIAO is fitted.
-2. U1, U2, C1–C5, R2, R3, D1, then L1.
+2. Q1, U1, U2, C1–C5, R2, R3, D1, then L1.
 3. Before fitting the XIAO, check that 5 V comes up: connect the cell and
    pull D3 (SRV_EN) high through about 1 kΩ. J2 pin 2 should read about
    5.1 V, and about 0 V again once D3 is released.
