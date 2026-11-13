@@ -395,10 +395,13 @@ module lid() {
         for (p = lid_screws()) translate([p[0] - 4.5, p[1] - 4.5, -bay_depth - 1]) cube([9, 9, 4]);
       }
       // backpack cradle: two posts with a groove for each long PCB edge
-      for (s = [-1, 1]) translate([bp_x - 2.2, bp_y + s * (backpack[0] / 2 + 0.3) - (s > 0 ? 0 : 3), -bay_depth - eps])
+      // The groove takes 0.9 mm of the board edge on the back and only 0.5 mm
+      // on the component side, where the XIAO's header strip starts 0.6 mm in.
+      for (s = [-1, 1]) mirror([0, s > 0 ? 0 : 1, 0]) translate([bp_x - 2.2, bp_y + backpack[0] / 2 - 0.9, -bay_depth - eps])
         difference() {
-          cube([backpack[2] + 4.4, 3, 12]);
-          translate([2.2 - 0.2, s > 0 ? -eps : 1.5, -1]) cube([backpack[2] + 0.4, 1.5 + eps, 14]);
+          cube([backpack[2] + 4.4, 3.9, 12]);
+          translate([2.2 - 0.2, -eps, -1]) cube([backpack[2] + 0.4, 0.9 + 0.25 + eps, 14]);   // board slot
+          translate([2.2 + backpack[2], -eps, -1]) cube([2.2 + eps, 0.4 + eps, 14]);          // shorter lip, component side
         }
       cell_cradle();
     }
