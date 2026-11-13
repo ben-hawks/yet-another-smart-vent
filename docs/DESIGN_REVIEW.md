@@ -81,10 +81,10 @@ the duct and isn't affected.
 cell takes 35–40 hours. Plan on swapping cells and using an 18650 charger.
 Buy a few spare cells.
 
-**Firmware source.** The device file pulls its package from the `main`
-branch (`repo_ref: main`), but this work is on
-`claude/wonderful-gauss-hco8hj`. Merge it, or set `repo_ref`, before
-flashing the fleet.
+**Firmware source.** The device file pulls its package from the fork's
+default branch (`repo_ref: master`; it said `main`, which doesn't exist),
+but this work is on `claude/wonderful-gauss-hco8hj`. Merge it, or set
+`repo_ref` to that branch, before flashing the fleet.
 
 ## Board (v0.2)
 

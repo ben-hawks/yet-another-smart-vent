@@ -8,7 +8,7 @@ blueprint:
     Find your furnace's rated rise on its rating plate or product data
     sheet (for example Ameristar M801P080BU36: 30-60 °F).
   domain: automation
-  source_url: https://github.com/ben-hawks/yet-another-smart-vent/blob/main/home-assistant/blueprints/automation/smart_vent/hvac_vent_safety.yaml
+  source_url: https://github.com/ben-hawks/yet-another-smart-vent/blob/master/home-assistant/blueprints/automation/smart_vent/hvac_vent_safety.yaml
   input:
     climate_entity:
       name: Thermostat

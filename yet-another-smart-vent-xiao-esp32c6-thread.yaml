@@ -11,7 +11,7 @@
 substitutions:
   name: yet-another-smart-vent
   friendly_name: Smart Vent
-  repo_ref: main
+  repo_ref: master
   ninety_degree_servo_distance: '0.71'  # 280 deg FT90M-FB; confirm on first calibration
   invert_value: '1'
   servo_transition_length: 3s
