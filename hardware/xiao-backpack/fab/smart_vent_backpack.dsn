@@ -60,7 +60,7 @@
     (component Capacitor_SMD:C_0805_2012Metric_Pad1.18x1.45mm_HandSolder
       (place C6 46400.000000 -13600.000000 front 90.000000 (PN 100n))
       (place C7 43800.000000 -13600.000000 front 90.000000 (PN 100n))
-      (place C2 8600.000000 -9500.000000 front 90.000000 (PN "1n DNP"))
+      (place C2 7500.000000 -5620.000000 front 90.000000 (PN 1n))
       (place C1 1400.000000 -9500.000000 front 90.000000 (PN 1u))
     )
     (component Connector_PinHeader_2.54mm:PinHeader_1x04_P2.54mm_Vertical
@@ -84,6 +84,9 @@
     (component TestPoint:TestPoint_THTPad_1.5x1.5mm_Drill0.7mm
       (place TP2 28450.000000 -12000.000000 front 0.000000 (PN "BAT- to XIAO"))
       (place TP1 28450.000000 -7000.000000 front 0.000000 (PN "BAT+ to XIAO"))
+    )
+    (component "Package_TO_SOT_SMD:SOT-23"
+      (place Q1 3400.000000 -5600.000000 front 0.000000 (PN AO3401A))
     )
     (component "Connector_JST:JST_PH_B2B-PH-K_1x02_P2.00mm_Vertical"
       (place J1 6600.000000 -16000.000000 front 180.000000 (PN "Battery (JST-PH)"))
@@ -245,6 +248,24 @@
       (outline (path signal 50  1250 -1250  -1250 -1250))
       (pin Rect[A]Pad_1500x1500_um 1 0 0)
     )
+    (image "Package_TO_SOT_SMD:SOT-23"
+      (outline (path signal 50  -1920 1700  -1920 -1700))
+      (outline (path signal 50  -1920 -1700  1920 -1700))
+      (outline (path signal 50  1920 -1700  1920 1700))
+      (outline (path signal 50  1920 1700  -1920 1700))
+      (outline (path signal 120  0 -1560  650 -1560))
+      (outline (path signal 120  0 -1560  -650 -1560))
+      (outline (path signal 120  0 1560  650 1560))
+      (outline (path signal 120  0 1560  -650 1560))
+      (outline (path signal 100  -325 1450  650 1450))
+      (outline (path signal 100  650 1450  650 -1450))
+      (outline (path signal 100  650 -1450  -650 -1450))
+      (outline (path signal 100  -650 -1450  -650 1125))
+      (outline (path signal 100  -650 1125  -325 1450))
+      (pin RoundRect[T]Pad_1475x600_150.571_um_0.000000_0 1 -937.5 950)
+      (pin RoundRect[T]Pad_1475x600_150.571_um_0.000000_0 2 -937.5 -950)
+      (pin RoundRect[T]Pad_1475x600_150.571_um_0.000000_0 3 937.5 0)
+    )
     (image "Connector_JST:JST_PH_B2B-PH-K_1x02_P2.00mm_Vertical"
       (outline (path signal 120  -600 2010  -600 1810))
       (outline (path signal 120  -1450 -2300  3450 -2300))
@@ -371,6 +392,15 @@
             -663.451 650))
       (attach off)
     )
+    (padstack RoundRect[T]Pad_1475x600_150.571_um_0.000000_0
+      (shape (polygon F.Cu 0  -738.071 150  -726.609 207.621  -693.97 256.47  -645.121 289.109
+            -587.499 300.57  587.5 300.571  645.121 289.109  693.97 256.47
+            726.609 207.621  738.07 149.999  738.071 -150  726.609 -207.621
+            693.97 -256.47  645.121 -289.109  587.499 -300.57  -587.5 -300.571
+            -645.121 -289.109  -693.97 -256.47  -726.609 -207.621  -738.07 -149.999
+            -738.071 150))
+      (attach off)
+    )
     (padstack RoundRect[T]Pad_1560x650_163.118_um_0.000000_0
       (shape (polygon F.Cu 0  -780.618 162.5  -768.201 224.923  -732.842 277.842  -679.923 313.201
             -617.5 325.618  617.5 325.618  679.923 313.201  732.842 277.842
@@ -422,11 +452,14 @@
       (pins R10-1 J3-2 U3-5)
     )
     (net GND
-      (pins R10-2 C6-2 R5-2 C7-2 R7-2 J2-1 C5-2 C4-2 R3-2 C3-2 U2-2 R1-2 C2-2 C1-2
-        U1-2 TP2-1 J1-2 U3-13)
+      (pins R10-2 C6-2 R5-2 C7-2 R7-2 J2-1 C5-2 C4-2 R3-2 C3-2 U2-2 R1-2 C1-2 U1-2
+        TP2-1 Q1-1 J1-2 U3-13)
+    )
+    (net VBAT_RAW
+      (pins Q1-3 J1-1)
     )
     (net VBAT
-      (pins R4-1 C1-1 U1-1 TP1-1 J1-1)
+      (pins R4-1 C2-2 C1-1 U1-1 TP1-1 Q1-2)
     )
     (net CT
       (pins C2-1 U1-4)
@@ -461,7 +494,7 @@
         (clearance 200.1)
       )
     )
-    (class Power GND SW V5 VBAT VSW
+    (class Power GND SW V5 VBAT VBAT_RAW VSW
       (circuit
         (use_via Via[0-1]_800:400_um)
       )
