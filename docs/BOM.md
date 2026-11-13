@@ -62,7 +62,7 @@ re-pin it, or use a 4-pin housing, if they don't match.
 | M3 × 10 flat-head screw | 2 | 20 | same | |
 | M3 × 16 flat-head screw | 1 | 10 | same | Follower louver axle |
 | ASA or PETG filament | about 150 g (estimate) | about 1.5 kg | any | **Not PLA**: gas-furnace supply air reaches 37–53 °C |
-| 3 mm closed-cell foam, zip ties, 26 AWG wire | some | — | any | Tower liner, holder retention, BAT wires |
+| 2–3 mm closed-cell foam, rubber band or O-ring, 26 AWG wire | some | — | any | Tower liner (2 mm on the end wall), holder retention, BAT wires |
 
 ## Rough cost per vent
 

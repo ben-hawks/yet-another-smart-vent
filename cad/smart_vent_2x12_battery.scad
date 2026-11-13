@@ -10,6 +10,8 @@
 //   openscad -D 'part="body_left"' -o body_left.stl smart_vent_2x12_battery.scad
 // Parts: assembly, body_left, body_right, louver_driven, louver_follower,
 //        link, lid, fit_test
+// The lid is a slide-out cartridge: it carries the backpack PCB and the cell
+// holder, so two screws bring board and cell out of the tower together.
 //
 // All structural fasteners are M3 screws into M3 heat-set inserts.
 
@@ -69,6 +71,8 @@ insert_d     = 4.0;
 insert_depth = 7.0;
 m3_clear     = 3.4;
 m3_head_d    = 6.4;   // countersink diameter for M3 flat head
+lid_thumb_screws = false;  // true: plain M3 clearance holes in the lid (flat seat) for M3 thumb screws
+thumb_head_h = 9;     // tallest thumb screw head that still leaves 5 mm under the tower
 
 /* [Servo - Feetech FT90M-FB (23.2 x 12 x 25.5 mm per Feetech): VERIFY WITH CALIPERS] */
 servo_body_len  = 23.2;   // along Y
@@ -89,6 +93,7 @@ sw_gap   = 5.0;
 sw_pad_w = 4.2;      // how far the pad stands out from the side wall
 
 /* [Electronics] */
+// X = depth (open face to back), Y = width, Z = length. CHECK YOURS WITH CALIPERS.
 cell_holder = [21, 21, 78];   // single 18650 holder, standing upright
 xiao = [17.8, 21, 1.2];       // XIAO ESP32-C6: width, length, PCB thickness
 
@@ -96,6 +101,8 @@ $fn = 48;
 
 assert(bay_depth + 2.5 + 5 <= boot_depth,
        str("Tower (", bay_depth + 2.5, " mm incl. lid) needs 5 mm clearance in a ", boot_depth, " mm boot"));
+assert(!lid_thumb_screws || bay_depth + 2.5 + thumb_head_h + 5 <= boot_depth,
+       "Thumb screw heads leave less than 5 mm under the tower");
 assert(end_block_len >= insert_depth + 1, "Louver end blocks are too short for the inserts");
 assert(louver_axis_y + crank_r * sin(45) + 3 < body_w / 2 - wall - 1, "crank tips would hit the side walls");
 assert(crank_r - link_w / 2 >= 6.4, "link bar would rub the servo's output boss (about 12 mm across)");
@@ -196,9 +203,6 @@ module body_cuts() {
   translate([tab_x - 1, -inner_w + sw_pad_w + 2.6, -5]) rotate([0, 90, 0]) cylinder(d = 3.5, h = partition_t + 2);
   // lid inserts
   for (p = lid_screws()) translate([p[0], p[1], -bay_depth]) rotate([180, 0, 0]) insert_hole();
-  // zip-tie slots in the end wall for the cell holder
-  for (z = [-30, -65]) translate([x0 - 1, -6, z]) cube([wall + 2, 3.5, 1.8]);
-  for (z = [-30, -65]) translate([x0 - 1, 2.5, z]) cube([wall + 2, 3.5, 1.8]);
 }
 
 module body_full() {
@@ -315,6 +319,9 @@ module link() {
 }
 
 // ---------------------------------------------------------------- lid
+// The lid is a cartridge. Undo its two screws and it slides straight down
+// out of the tower with the backpack PCB and the cell holder on it; the
+// servo and limit switch leads stay plugged in and need about 90 mm of slack.
 // The electronics are the XIAO backpack PCB (hardware/xiao-backpack, 48 x 19
 // x 1.6 mm) standing upright under the servo, XIAO end (USB-C) down through
 // the lid. The XIAO is soldered straight onto the backpack (2.5 mm header
@@ -325,6 +332,58 @@ bp_stack_top = 12;                // tallest top-side part: JST-PH + plug at the
 bp_x = tab_x - 14.5;               // back (bottom-side) face of the backpack PCB
 bp_y = 0;                          // centre of the board width
 usb_x = bp_x + backpack[2] + 2.5 + 1.2 + 1.6;   // USB-C centre: PCB + spacer + XIAO PCB + half receptacle
+
+// Cell holder cradle. The holder stands on the lid against the foam liner,
+// open face toward -X (the end wall): in the tower the liner backs the cell,
+// and with the cartridge out that face has nothing in front of it.
+hold_liner_gap = 0.2;              // holder to foam liner (the foam gives)
+hold_fit   = 0.3;                  // socket clearance around the holder
+hold_x0    = x0 + wall + liner_t + hold_liner_gap;   // open face of the holder
+hold_x1    = hold_x0 + cell_holder[0];               // back of the holder
+hold_y     = cell_holder[1] / 2;
+rail_t     = 2;                    // side rails
+rail_h     = 55;                   // rail height above the lid
+sock_h     = 6;                    // height of the low wall across the open face
+sock_wall  = 1.6;
+rail_x0    = hold_x0 + 0.2;        // 0.4 mm short of the liner
+rail_x1    = hold_x1 + hold_fit + sock_wall;
+rail_y     = hold_y + hold_fit;    // inner face of a rail
+keep_w     = 1.8;                  // how far the back lips reach in behind the holder
+band_z     = [20, 45];             // rubber band / zip tie notches, height above the lid
+band_h     = 4;
+wire_notch = [3, 6];               // lead comb in the top of each rail: width, depth
+servo_x0   = tab_x - servo_below_tab;                // servo case face in the bay
+servo_z0   = louver_axis_z - servo_body_w / 2;       // underside of the servo case
+
+module cell_cradle() {
+  zb = -bay_depth - eps;
+  difference() {
+    union() {
+      for (s = [-1, 1]) {
+        // side rail
+        translate([rail_x0, s > 0 ? rail_y : -rail_y - rail_t, zb]) cube([rail_x1 - rail_x0, rail_t, rail_h + eps]);
+        // lip behind the holder's back corner
+        translate([hold_x1 + hold_fit, s > 0 ? rail_y - hold_fit - keep_w : rail_y - eps, zb])
+          cube([sock_wall, hold_fit + keep_w + eps, rail_h + eps]);
+      }
+      // low wall across the open face (the liner must stop above it)
+      translate([hold_x0 - 0.2 - sock_wall, -rail_y - rail_t, zb]) cube([sock_wall, 2 * (rail_y + rail_t), sock_h + eps]);
+    }
+    // band notches in both vertical edges of the rails; 45 deg roofs print clean
+    for (h = band_z) translate([0, 0, -bay_depth + h]) rotate([90, 0, 0]) linear_extrude(2 * (rail_y + rail_t) + 2, center = true) {
+      polygon([[rail_x0 - 1, 0], [rail_x0 + 1.2, 0], [rail_x0 + 1.2, band_h], [rail_x0 - 1, band_h + 2.2]]);
+      polygon([[rail_x1 + 1, 0], [hold_x1 + hold_fit - eps, 0], [hold_x1 + hold_fit - eps, band_h], [rail_x1 + 1, band_h + sock_wall + 1 + eps]]);
+    }
+    // lead comb: the servo and switch leads fold over here
+    translate([(rail_x0 + hold_x1) / 2 - wire_notch[0] / 2, -rail_y - rail_t - 1, -bay_depth + rail_h - wire_notch[1]])
+      cube([wire_notch[0], 2 * (rail_y + rail_t) + 2, wire_notch[1] + 1]);
+  }
+}
+
+module holder_ghost() {
+  translate([hold_x0, -hold_y, -bay_depth]) cube(cell_holder);
+}
+
 module lid() {
   difference() {
     union() {
@@ -341,8 +400,11 @@ module lid() {
           cube([backpack[2] + 4.4, 3, 12]);
           translate([2.2 - 0.2, s > 0 ? -eps : 1.5, -1]) cube([backpack[2] + 0.4, 1.5 + eps, 14]);
         }
+      cell_cradle();
     }
-    for (p = lid_screws()) translate([p[0], p[1], -bay_depth - lid_t]) rotate([180, 0, 0]) m3_countersunk(lid_t + 1);
+    for (p = lid_screws()) translate([p[0], p[1], -bay_depth - lid_t])
+      if (lid_thumb_screws) translate([0, 0, -1]) cylinder(d = m3_clear, h = lid_t + 2);
+      else rotate([180, 0, 0]) m3_countersunk(lid_t + 1);
     // USB-C plug opening (overmold ~12 x 7 mm)
     translate([usb_x - 4, bp_y - 6.75, -bay_depth - lid_t - 1]) cube([8, 13.5, lid_t + 3]);
   }
@@ -353,7 +415,14 @@ module backpack_ghost() {
   translate([bp_x + backpack[2], bp_y - backpack[0] / 2, -bay_depth]) cube([bp_stack_top, backpack[0], backpack[1]]);
 }
 
-assert(bp_x - 2.5 > x0 + wall + liner_t + cell_holder[0], "backpack collides with the cell holder");
+assert(bp_x - 1 >= rail_x1, "cell cradle is closer than 1 mm to the back of the backpack PCB");
+assert(hold_x0 >= x0 + wall + liner_t, "cell holder is pushed into the foam liner");
+assert(rail_x0 >= x0 + wall + liner_t + 0.4 - eps, "cradle rails need 0.4 mm to the foam liner");
+assert(hold_x0 - 0.2 - sock_wall >= x0 + wall + 0.4 - eps, "cradle front wall needs 0.4 mm to the end wall");
+assert(hold_x1 + 1 <= servo_x0 + eps, "cell holder is closer than 1 mm to the servo");
+assert(rail_x1 + 1 <= servo_x0 || -bay_depth + rail_h <= servo_z0 - 1.9, "cradle rails reach the servo");
+assert(-bay_depth + cell_holder[2] <= -2, "cell holder is too tall for the tower");
+assert(rail_y + rail_t + 0.4 <= inner_w - 8, "cradle rails collide with the lid screw bosses");
 assert(bp_x + backpack[2] + bp_stack_top < tab_x, "backpack stack collides with the partition");
 assert(-bay_depth + backpack[1] < louver_axis_z - servo_body_w / 2, "backpack reaches the servo");
 
@@ -412,6 +481,9 @@ else if (part == "asm_driven") placed_louver(-1, true);
 else if (part == "asm_follower") placed_louver(1, false);
 else if (part == "asm_link") link_in_assembly();
 else if (part == "asm_servo") servo_ghost();
+else if (part == "asm_lid") lid();
+else if (part == "asm_holder") holder_ghost();
+else if (part == "asm_backpack") backpack_ghost();
 
 module assembly_clean() {
   color("SteelBlue") translate([-explode / 2, 0, 0]) body_left();
@@ -419,10 +491,13 @@ module assembly_clean() {
   color("Orange") placed_louver(-1, true);
   color("Gold") placed_louver(1, false);
   color("Tomato") translate([0, 0, -explode * 0.6]) link_in_assembly();
-  color("DimGray") translate([0, 0, -explode]) lid();
+  // the cartridge: lid, backpack and cell holder move together
+  translate([0, 0, -explode * 2.5]) {
+    color("DimGray") lid();
+    color("Purple", 0.6) backpack_ghost();
+    color("Green", 0.6) holder_ghost();
+  }
   color("Black", 0.6) servo_ghost();
-  color("Purple", 0.6) backpack_ghost();
-  color("Green", 0.6) translate([x0 + wall + liner_t, -cell_holder[0] / 2, -bay_depth + 2]) cube(cell_holder);
 }
 if (part == "asm_body_left") body_left();
 if (part == "asm_body_right") body_right();

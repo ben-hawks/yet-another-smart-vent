@@ -164,7 +164,8 @@ but this work is on `claude/wonderful-gauss-hco8hj`. Merge it, or set
   print the floor vent's tower half (`body_left`) and lid in a V-0 rated
   filament (flame-retardant PETG or PC).
 - **Wiring.** The cell's protection circuit is the only fuse. Keep the
-  holder leads short, and zip-tie the holder so the cell can't shake loose.
+  holder leads short, and band the holder into the lid's cradle so the cell
+  can't shake loose.
 - **Drilling for the Delta Tango:** ductwork only, never the furnace
   cabinet, coil housing or flue.
 

@@ -42,7 +42,7 @@ For distributor part numbers and prices, see [BOM.md](BOM.md).
 | 1 | Backpack board ([`hardware/xiao-backpack`](../hardware/xiao-backpack)) | Reverse-polarity protection, load switch, 5 V boost, both dividers and the connectors. JLCPCB assembles the SMD parts |
 | 1 | Panasonic ESE-11HS2 detector switch | Closed limit switch, same as upstream |
 | 1 | 18650 Li-ion cell, **protected**, 3000–3500 mAh | A protected cell has a built-in protection circuit |
-| 1 | Single-18650 holder with wire leads | Stands upright in the tower |
+| 1 | Single-18650 holder with wire leads | Stands upright in the cradle on the lid (about 21 × 21 × 78 mm; set `cell_holder` to yours) |
 | 9 | M3 heat-set insert, 4.6 mm OD × 5.7 mm long (4.0 mm hole, 7 mm deep in the model) | 4 centre joint, 2 lid, 3 louver axles |
 | 2 | M3 × 10 flat-head screw | Centre joint, top (through the grille) |
 | 6 | M3 × 8 flat-head screw | Centre joint bottom (2), far-end louver axles (2), lid (2) |
@@ -137,8 +137,12 @@ hotter if closed vents push the rise past its rating; see
 - **Print everything in ASA (best) or PETG.** PLA softens around 55–60 °C
   and long thin parts will sag or warp.
 - The cell sits in a closed tower that air flows around, not through. Line
-  the tower's end wall and sides with ~3 mm closed-cell foam (the tower has
-  `liner_t` of room for it) to slow how fast it heats up.
+  the tower's end wall and sides with closed-cell foam to slow how fast it
+  heats up. The end wall has `liner_t` (2 mm) of room, and the cell holder
+  on the lid slides in 0.2 mm from that foam, so don't use thicker foam
+  there. Start the end-wall foam 8 mm above the lid: the cradle's low front
+  wall sits against the end wall below that. The side walls have room for
+  3 mm.
 - A protected 18650 cell can deliver power up to about 60 °C. Long periods
   above about 45 °C wear it out faster, which shows up as lost capacity.
   Watch `Bay Temperature` over the first heating season. If it routinely
@@ -164,7 +168,7 @@ Pre-exported STLs are in `cad/stl/`, already in print orientation.
 | `louver_driven` | 1 | Flat side down. About 244 mm long, so print it diagonally on a bed smaller than 250 mm |
 | `louver_follower` | 1 | Same as above |
 | `link` | 1 | Flat |
-| `lid` | 1 | Flat, cradle posts up |
+| `lid` | 1 | Flat, posts and cell cradle up, no supports |
 
 Suggested settings: ASA/PETG, 0.2 mm layers, 4 walls, 25% gyroid infill,
 100% infill on the louvers.
@@ -199,10 +203,33 @@ top (countersunk) and two from below.
    the driven louver's outer edge at the servo end. Close the louvers by
    hand and set the switch so it clicks just as they reach closed. Run its
    wires through the hole in the partition beside the pad.
-7. Plug the servo, switch and cell holder into the backpack. It slots into
-   the lid cradle with USB-C pointing down through the lid. Put the cell
-   holder at the end wall (zip-tie slots provided) and add the foam liner.
-8. Screw on the lid.
+7. Build the cartridge on the lid. The backpack slots into its two posts
+   with USB-C pointing down through the lid. The cell holder drops into the
+   cradle beside it: its lower end sits in a 6 mm deep socket between two
+   55 mm rails, with its **open face away from the backpack** (toward the
+   tower's end wall). A rubber band or O-ring in one pair of rail notches
+   keeps the holder in the cradle while you handle it; a dab of hot glue
+   under the holder also works. Plug the holder into the backpack.
+8. Stick the foam liner in the tower. Plug in the servo and the switch,
+   leaving each lead about 90 mm of slack so the cartridge can come all the
+   way out with them attached. Fold the slack over the notch in the top of a
+   rail so it lands in the same place every time.
+9. Slide the cartridge straight up into the tower and fit the lid's two
+   screws.
+
+### Swapping the cell
+
+1. Lift the vent out of the floor.
+2. Undo the two lid screws.
+3. Slide the cartridge (lid, board and cell holder) straight down out of
+   the tower. The servo and switch leads stay plugged in.
+4. Roll the band off, push the cell out of the holder's open face and fit
+   the charged one. **Check the polarity** against the marks in the holder.
+5. Put the band back, slide the cartridge in and fit the screws.
+
+For tool-free swaps, set `lid_thumb_screws = true` and re-export the lid.
+Its holes become plain M3 clearance holes with a flat seat, for two M3 × 8
+thumb screws (heads up to 9 mm tall fit a 4" boot).
 
 ## Measurements needed before the first full print
 
